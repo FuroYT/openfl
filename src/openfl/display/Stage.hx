@@ -869,7 +869,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 	#if (commonjs && !nodejs)
 	@:noCompletion private var __cursor:LimeMouseCursor;
 	#end
-	@:noCompletion private var __deltaTime:Int;
+	@:noCompletion private var __deltaTime:Float;
 	@:noCompletion private var __dirty:Bool;
 	@:noCompletion private var __displayMatrix:Matrix;
 	@:noCompletion private var __displayRect:Rectangle;
@@ -978,7 +978,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		__colorString = "#FFFFFF";
 		__contentsScaleFactor = 1;
 		__currentTabOrderIndex = 0;
-		__deltaTime = 0;
+		__deltaTime = 0.0;
 		__displayState = NORMAL;
 		__mouseX = 0;
 		__mouseY = 0;
@@ -2221,7 +2221,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 
 		__renderable = true;
 		__enterFrame(__deltaTime);
-		__deltaTime = 0;
+		__deltaTime = 0.0;
 
 		var cancelled = __render(context);
 		if (cancelled)
@@ -2328,7 +2328,7 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		__onTouch(TouchEvent.TOUCH_BEGIN, touch, __primaryTouch == touch);
 	}
 
-	@:noCompletion private function __onLimeUpdate(deltaTime:Int):Void
+	@:noCompletion private function __onLimeUpdate(deltaTime:Float):Void
 	{
 		__deltaTime = deltaTime;
 
