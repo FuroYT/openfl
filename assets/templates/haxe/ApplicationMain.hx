@@ -102,6 +102,15 @@ class ApplicationMain
 			#end
 		}
 
+		#if mobile
+		final orientation:lime.tools.Orientation = ::orientation::;
+
+		if (orientation == PORTRAIT)
+			lime.system.System.setHint("ORIENTATIONS", "Portrait PortraitUpsideDown");
+		else if (orientation == LANDSCAPE)
+			lime.system.System.setHint("ORIENTATIONS", "LandscapeLeft LandscapeRight");
+		#end
+
 		app.createWindow(attributes);
 		::end::
 		#elseif air
