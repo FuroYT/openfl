@@ -5,6 +5,7 @@ package openfl.net;
 import haxe.io.Path;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
+import openfl.filesystem.File;
 #if lime
 import lime.ui.FileDialog;
 #end
@@ -135,62 +136,47 @@ class FileReferenceList extends EventDispatcher
 	**/
 	public function browse(typeFilter:Array<FileFilter> = null):Bool
 	{
-		#if desktop
-		var filter:String = null;
-
-		if (typeFilter != null)
-		{
-			var filters:Array<String> = [];
-
-			for (type in typeFilter)
-			{
-				filters.push(StringTools.replace(StringTools.replace(type.extension, "*.", ""), ";", ","));
-			}
-
-			filter = filters.join(";");
-		}
-
 		fileList = new Array();
 
 		#if (lime && !macro)
-		var fileDialog = new FileDialog();
-		fileDialog.onCancel.add(fileDialog_onCancel);
-		fileDialog.onSelectMultiple.add(fileDialog_onSelectMultiple);
-		fileDialog.browse(OPEN_MULTIPLE, filter);
+		FileDialog.openFile(Lib.current.stage.window, function(paths:Array<String>, filter):Void
+		{
+			if (paths.length > 0)
+			{
+				for (path in paths)
+				{
+					var fileReference = new FileReference();
+
+					#if sys
+					try
+					{
+						var fileInfo = FileSystem.stat(path);
+						fileReference.creationDate = fileInfo.ctime;
+						fileReference.modificationDate = fileInfo.mtime;
+						fileReference.size = fileInfo.size;
+						fileReference.type = "." + Path.extension(path);
+					}
+					catch (e)
+					#end
+
+					fileReference.__path = path;
+					fileReference.name = Path.withoutDirectory(path);
+
+					fileList.push(fileReference);
+				}
+
+				dispatchEvent(new Event(Event.SELECT));
+			}
+			else
+			{
+				this.dispatchEvent(new Event(Event.CANCEL));
+			}
+		}, @:privateAccess File.__getFilterTypes(typeFilter), null, true);
+
 		return true;
-		#end
 		#end
 
 		return false;
-	}
-
-	// Event Handlers
-	@:noCompletion private function fileDialog_onCancel():Void
-	{
-		dispatchEvent(new Event(Event.CANCEL));
-	}
-
-	@:noCompletion private function fileDialog_onSelectMultiple(paths:Array<String>):Void
-	{
-		for (path in paths)
-		{
-			var fileReference = new FileReference();
-
-			#if sys
-			var fileInfo = FileSystem.stat(path);
-			fileReference.creationDate = fileInfo.ctime;
-			fileReference.modificationDate = fileInfo.mtime;
-			fileReference.size = fileInfo.size;
-			fileReference.type = "." + Path.extension(path);
-			#end
-
-			fileReference.__path = path;
-			fileReference.name = Path.withoutDirectory(path);
-
-			fileList.push(fileReference);
-		}
-
-		dispatchEvent(new Event(Event.SELECT));
 	}
 }
 #elseif js
