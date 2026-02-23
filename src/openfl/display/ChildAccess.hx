@@ -119,16 +119,6 @@ abstract ChildAccess<T:DisplayObject>(T) from T to T
 	public var buttonMode(get, set):Bool;
 
 	/**
-		Accesses the `cacheAsBitmap` property.
-	**/
-	public var cacheAsBitmap(get, set):Bool;
-
-	/**
-		Accesses the `cacheAsBitmapMatrix` property.
-	**/
-	public var cacheAsBitmapMatrix(get, set):Matrix;
-
-	/**
 		Accesses the `caretIndex` property (for TextField instances only).
 	**/
 	public var caretIndex(get, never):Int;
@@ -1353,26 +1343,6 @@ abstract ChildAccess<T:DisplayObject>(T) from T to T
 	private inline function set_buttonMode(value:Bool):Bool
 	{
 		return cast(this, Sprite).buttonMode = value;
-	}
-
-	private inline function get_cacheAsBitmap():Bool
-	{
-		return this.cacheAsBitmap;
-	}
-
-	private inline function set_cacheAsBitmap(value:Bool):Bool
-	{
-		return this.cacheAsBitmap = value;
-	}
-
-	private inline function get_cacheAsBitmapMatrix():Matrix
-	{
-		return this.cacheAsBitmapMatrix;
-	}
-
-	private inline function set_cacheAsBitmapMatrix(value:Matrix):Matrix
-	{
-		return this.cacheAsBitmapMatrix = value;
 	}
 
 	private inline function get_caretIndex():Int

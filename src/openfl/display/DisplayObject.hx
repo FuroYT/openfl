@@ -282,107 +282,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	#end
 
 	/**
-		All vector data for a display object that has a cached bitmap is drawn
-		to the bitmap instead of the main display. If
-		`cacheAsBitmapMatrix` is null or unsupported, the bitmap is
-		then copied to the main display as unstretched, unrotated pixels snapped
-		to the nearest pixel boundaries. Pixels are mapped 1 to 1 with the parent
-		object. If the bounds of the bitmap change, the bitmap is recreated
-		instead of being stretched.
-
-		If `cacheAsBitmapMatrix` is non-null and supported, the
-		object is drawn to the off-screen bitmap using that matrix and the
-		stretched and/or rotated results of that rendering are used to draw the
-		object to the main display.
-
-		No internal bitmap is created unless the `cacheAsBitmap`
-		property is set to `true`.
-
-		After you set the `cacheAsBitmap` property to
-		`true`, the rendering does not change, however the display
-		object performs pixel snapping automatically. The animation speed can be
-		significantly faster depending on the complexity of the vector content.
-
-		The `cacheAsBitmap` property is automatically set to
-		`true` whenever you apply a filter to a display object(when
-		its `filter` array is not empty), and if a display object has a
-		filter applied to it, `cacheAsBitmap` is reported as
-		`true` for that display object, even if you set the property to
-		`false`. If you clear all filters for a display object, the
-		`cacheAsBitmap` setting changes to what it was last set to.
-
-		A display object does not use a bitmap even if the
-		`cacheAsBitmap` property is set to `true` and
-		instead renders from vector data in the following cases:
-
-		* The bitmap is too large. In AIR 1.5 and Flash Player 10, the maximum
-		size for a bitmap image is 8,191 pixels in width or height, and the total
-		number of pixels cannot exceed 16,777,215 pixels.(So, if a bitmap image
-		is 8,191 pixels wide, it can only be 2,048 pixels high.) In Flash Player 9
-		and earlier, the limitation is is 2880 pixels in height and 2,880 pixels
-		in width.
-		*  The bitmap fails to allocate(out of memory error).
-
-		The `cacheAsBitmap` property is best used with movie clips
-		that have mostly static content and that do not scale and rotate
-		frequently. With such movie clips, `cacheAsBitmap` can lead to
-		performance increases when the movie clip is translated(when its _x_
-		and _y_ position is changed).
-	**/
-	public var cacheAsBitmap(get, set):Bool;
-
-	/**
-		If non-null, this Matrix object defines how a display object is rendered when `cacheAsBitmap` is set to
-		`true`. The application uses this matrix as a transformation matrix that is applied when rendering the
-		bitmap version of the display object.
-
-		_AIR profile support:_ This feature is supported on mobile devices, but it is not supported on desktop
-		operating systems. It also has limited support on AIR for TV devices. Specifically, on AIR for TV devices,
-		supported transformations include scaling and translation, but not rotation and skewing. See AIR Profile
-		Support for more information regarding API support across multiple profiles.
-
-		With `cacheAsBitmapMatrix` set, the application retains a cached bitmap image across various 2D
-		transformations, including translation, rotation, and scaling. If the application uses hardware acceleration,
-		the object will be stored in video memory as a texture. This allows the GPU to apply the supported
-		transformations to the object. The GPU can perform these transformations faster than the CPU.
-
-		To use the hardware acceleration, set Rendering to GPU in the General tab of the iPhone Settings dialog box
-		in Flash Professional CS5. Or set the `renderMode` property to gpu in the application descriptor file. Note
-		that AIR for TV devices automatically use hardware acceleration if it is available.
-
-		For example, the following code sends an untransformed bitmap representation of the display object to the GPU:
-
-		```haxe
-		var matrix:Matrix = new Matrix(); // creates an identity matrix
-		mySprite.cacheAsBitmapMatrix = matrix;
-		mySprite.cacheAsBitmap = true;
-		```
-
-		Usually, the identity matrix (`new Matrix()`) suffices. However, you can use another matrix, such as a
-		scaled-down matrix, to upload a different bitmap to the GPU. For example, the following example applies a
-		`cacheAsBitmapMatrix` matrix that is scaled by 0.5 on the x and y axes. The bitmap object that the GPU uses
-		is smaller, however the GPU adjusts its size to match the `transform.matrix` property of the display object:
-
-		```haxe
-		var matrix:Matrix = new Matrix(); // creates an identity matrix
-		matrix.scale(0.5, 0.5); // scales the matrix
-		mySprite.cacheAsBitmapMatrix = matrix;
-		mySprite.cacheAsBitmap = true;
-		```
-
-		Generally, you should choose to use a matrix that transforms the display object to the size that it will
-		appear in the application. For example, if your application displays the bitmap version of the sprite scaled
-		down by a half, use a matrix that scales down by a half. If you application will display the sprite larger
-		than its current dimensions, use a matrix that scales up by that factor.
-
-		**Note:** The `cacheAsBitmapMatrix` property is suitable for 2D transformations. If you need to apply
-		transformations in 3D, you may do so by setting a 3D property of the object and manipulating its
-		`transform.matrix3D` property. If the application is packaged using GPU mode, this allows the 3D transforms
-		to be applied to the object by the GPU. The `cacheAsBitmapMatrix` is ignored for 3D objects.
-	**/
-	public var cacheAsBitmapMatrix(get, set):Matrix;
-
-	/**
 		An indexed array that contains each filter object currently associated
 		with the display object. The openfl.filters package contains several
 		classes that define specific filters you can use.
@@ -889,8 +788,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	// @:noCompletion @:dox(hide) @:require(flash10) var z:Float;
 	@:noCompletion private var __alpha:Float;
 	@:noCompletion private var __blendMode:BlendMode;
-	@:noCompletion private var __cacheAsBitmap:Bool;
-	@:noCompletion private var __cacheAsBitmapMatrix:Matrix;
 	@:noCompletion private var __cacheBitmap:Bitmap;
 	@:noCompletion private var __cacheBitmapBackground:Null<Int>;
 	@:noCompletion private var __cacheBitmapColorTransform:ColorTransform;
@@ -962,14 +859,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 			"blendMode": {
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_blendMode (); }"),
 				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_blendMode (v); }")
-			},
-			"cacheAsBitmap": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_cacheAsBitmap (); }"),
-				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_cacheAsBitmap (v); }")
-			},
-			"cacheAsBitmapMatrix": {
-				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_cacheAsBitmapMatrix (); }"),
-				set: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function (v) { return this.set_cacheAsBitmapMatrix (v); }")
 			},
 			"filters": {
 				get: untyped #if haxe4 js.Syntax.code #else __js__ #end ("function () { return this.get_filters (); }"),
@@ -1051,7 +940,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 		__alpha = 1;
 		__blendMode = NORMAL;
-		__cacheAsBitmap = false;
 		__transform = new Matrix();
 		__visible = true;
 
@@ -1700,125 +1588,88 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	{
 		var renderParent = __renderParent != null ? __renderParent : parent;
 		if (__isMask && renderParent == null) renderParent = __maskTarget;
-		__renderable = (__visible && __scaleX != 0 && __scaleY != 0 && !__isMask && (renderParent == null || !renderParent.__isMask));
-		__updateTransforms();
 
-		// if (updateChildren && __transformDirty) {
+		var parentTransformDirty = (renderParent != null && renderParent.__transformDirty);
+		var needsUpdate = __transformDirty || parentTransformDirty || __renderDirty;
 
-		__transformDirty = false;
-
-		// }
-
-		__worldTransformInvalid = false;
-
-		if (!transformOnly)
+		if (needsUpdate)
 		{
-			if (__supportDOM)
-			{
-				__renderTransformChanged = !__renderTransform.equals(__renderTransformCache);
+			__renderable = (__visible && __scaleX != 0 && __scaleY != 0 && !__isMask && (renderParent == null || !renderParent.__isMask));
 
-				if (__renderTransformCache == null)
-				{
-					__renderTransformCache = __renderTransform.clone();
-				}
-				else
-				{
-					__renderTransformCache.copyFrom(__renderTransform);
-				}
-			}
+			__updateTransforms();
 
-			if (renderParent != null)
+			if (!transformOnly)
 			{
 				if (__supportDOM)
 				{
-					var worldVisible = (renderParent.__worldVisible && __visible);
-					__worldVisibleChanged = (__worldVisible != worldVisible);
-					__worldVisible = worldVisible;
+					__renderTransformChanged = !__renderTransform.equals(__renderTransformCache);
+					if (__renderTransformCache == null) __renderTransformCache = __renderTransform.clone();
+					else
+						__renderTransformCache.copyFrom(__renderTransform);
+				}
 
-					var worldAlpha = alpha * renderParent.__worldAlpha;
-					__worldAlphaChanged = (__worldAlpha != worldAlpha);
-					__worldAlpha = worldAlpha;
+				if (renderParent != null)
+				{
+					var parentAlpha = renderParent.__worldAlpha;
+					if (__supportDOM)
+					{
+						var worldVisible = (renderParent.__worldVisible && __visible);
+						__worldVisibleChanged = (__worldVisible != worldVisible);
+						__worldVisible = worldVisible;
+
+						var worldAlpha = alpha * parentAlpha;
+						__worldAlphaChanged = (__worldAlpha != worldAlpha);
+						__worldAlpha = worldAlpha;
+					}
+					else
+					{
+						__worldAlpha = alpha * parentAlpha;
+					}
+
+					if (__objectTransform != null)
+					{
+						__worldColorTransform.__copyFrom(__objectTransform.__colorTransform);
+						__worldColorTransform.__combine(renderParent.__worldColorTransform);
+					}
+					else
+					{
+						__worldColorTransform.__copyFrom(renderParent.__worldColorTransform);
+					}
+
+					// Inherit Rendering States
+					__worldBlendMode = (__blendMode == null || __blendMode == NORMAL) ? renderParent.__worldBlendMode : __blendMode;
+					__worldShader = (__shader == null) ? renderParent.__shader : __shader;
+					__worldScale9Grid = (__scale9Grid == null) ? renderParent.__scale9Grid : __scale9Grid;
 				}
 				else
 				{
-					__worldAlpha = alpha * renderParent.__worldAlpha;
-				}
+					__worldAlpha = alpha;
+					if (__supportDOM)
+					{
+						__worldVisibleChanged = (__worldVisible != __visible);
+						__worldVisible = __visible;
+						__worldAlphaChanged = (__worldAlpha != alpha);
+					}
 
-				if (__objectTransform != null)
-				{
-					__worldColorTransform.__copyFrom(__objectTransform.__colorTransform);
-					__worldColorTransform.__combine(renderParent.__worldColorTransform);
-				}
-				else
-				{
-					__worldColorTransform.__copyFrom(renderParent.__worldColorTransform);
-				}
+					if (__objectTransform != null) __worldColorTransform.__copyFrom(__objectTransform.__colorTransform);
+					else
+						__worldColorTransform.__identity();
 
-				if (__blendMode == null || __blendMode == NORMAL)
-				{
-					// TODO: Handle multiple blend modes better
-					__worldBlendMode = renderParent.__worldBlendMode;
-				}
-				else
-				{
 					__worldBlendMode = __blendMode;
-				}
-
-				if (__shader == null)
-				{
-					__worldShader = renderParent.__shader;
-				}
-				else
-				{
 					__worldShader = __shader;
-				}
-
-				if (__scale9Grid == null)
-				{
-					__worldScale9Grid = renderParent.__scale9Grid;
-				}
-				else
-				{
 					__worldScale9Grid = __scale9Grid;
 				}
 			}
-			else
-			{
-				__worldAlpha = alpha;
-
-				if (__supportDOM)
-				{
-					__worldVisibleChanged = (__worldVisible != __visible);
-					__worldVisible = __visible;
-
-					__worldAlphaChanged = (__worldAlpha != alpha);
-				}
-
-				if (__objectTransform != null)
-				{
-					__worldColorTransform.__copyFrom(__objectTransform.__colorTransform);
-				}
-				else
-				{
-					__worldColorTransform.__identity();
-				}
-
-				__worldBlendMode = __blendMode;
-				__worldShader = __shader;
-				__worldScale9Grid = __scale9Grid;
-			}
-
-			// if (updateChildren && __renderDirty) {
-
-			// __renderDirty = false;
-
-			// }
 		}
 
-		if (updateChildren && mask != null)
+		if (updateChildren)
 		{
-			mask.__update(transformOnly, true);
+			if (mask != null) mask.__update(transformOnly, true);
 		}
+
+		__transformDirty = false;
+		__worldTransformInvalid = false;
+		__renderDirty = false;
 	}
 
 	@:noCompletion private function __updateTransforms(overrideTransform:Matrix = null):Void
@@ -1826,36 +1677,71 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		var overrided = overrideTransform != null;
 		var local = overrided ? overrideTransform : __transform;
 
-		if (__worldTransform == null)
-		{
-			__worldTransform = new Matrix();
-		}
-
-		if (__renderTransform == null)
-		{
-			__renderTransform = new Matrix();
-		}
+		// 1. LAZY ALLOCATION: Only create matrices once in the object's lifetime
+		if (__worldTransform == null) __worldTransform = new Matrix();
+		if (__renderTransform == null) __renderTransform = new Matrix();
 
 		var renderParent = __renderParent != null ? __renderParent : parent;
 
+		// 2. SHORT-CIRCUIT: Use a single check for the identity matrix
+		var isIdentity = (local.b == 0 && local.c == 0 && local.a == 1 && local.d == 1);
+
+		// --- Process World Transform ---
 		if (!overrided && parent != null)
 		{
-			__calculateAbsoluteTransform(local, parent.__worldTransform, __worldTransform);
+			var pt = parent.__worldTransform;
+			if (isIdentity)
+			{
+				// Direct property access is faster than calling a function
+				__worldTransform.a = pt.a;
+				__worldTransform.b = pt.b;
+				__worldTransform.c = pt.c;
+				__worldTransform.d = pt.d;
+				__worldTransform.tx = local.tx + pt.tx;
+				__worldTransform.ty = local.ty + pt.ty;
+			}
+			else
+			{
+				__calculateAbsoluteTransform(local, pt, __worldTransform);
+			}
 		}
 		else
 		{
 			__worldTransform.copyFrom(local);
 		}
 
+		// --- Process Render Transform ---
+		// OPTIMIZATION: If renderParent is the same as parent, just copy the math we already did!
 		if (!overrided && renderParent != null)
 		{
-			__calculateAbsoluteTransform(local, renderParent.__renderTransform, __renderTransform);
+			if (renderParent == parent)
+			{
+				__renderTransform.copyFrom(__worldTransform);
+			}
+			else
+			{
+				var rt = renderParent.__renderTransform;
+				if (isIdentity)
+				{
+					__renderTransform.a = rt.a;
+					__renderTransform.b = rt.b;
+					__renderTransform.c = rt.c;
+					__renderTransform.d = rt.d;
+					__renderTransform.tx = local.tx + rt.tx;
+					__renderTransform.ty = local.ty + rt.ty;
+				}
+				else
+				{
+					__calculateAbsoluteTransform(local, rt, __renderTransform);
+				}
+			}
 		}
 		else
 		{
 			__renderTransform.copyFrom(local);
 		}
 
+		// 3. SCROLL RECT OPTIMIZATION
 		if (__scrollRect != null)
 		{
 			__renderTransform.__translateTransformed(-__scrollRect.x, -__scrollRect.y);
@@ -1873,7 +1759,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		if (value > 1.0) value = 1.0;
 		if (value < 0.0) value = 0.0;
 
-		if (value != __alpha && !cacheAsBitmap) __setRenderDirty();
+		if (value != __alpha) __setRenderDirty();
 		return __alpha = value;
 	}
 
@@ -1888,32 +1774,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 
 		if (value != __blendMode) __setRenderDirty();
 		return __blendMode = value;
-	}
-
-	@:noCompletion private function get_cacheAsBitmap():Bool
-	{
-		return (__filters == null ? __cacheAsBitmap : true);
-	}
-
-	@:noCompletion private function set_cacheAsBitmap(value:Bool):Bool
-	{
-		if (value != __cacheAsBitmap)
-		{
-			__setRenderDirty();
-		}
-
-		return __cacheAsBitmap = value;
-	}
-
-	@:noCompletion private function get_cacheAsBitmapMatrix():Matrix
-	{
-		return __cacheAsBitmapMatrix;
-	}
-
-	@:noCompletion private function set_cacheAsBitmapMatrix(value:Matrix):Matrix
-	{
-		__setRenderDirty();
-		return __cacheAsBitmapMatrix = (value != null ? value.clone() : value);
 	}
 
 	@:noCompletion private function get_filters():Array<BitmapFilter>
@@ -2271,7 +2131,7 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		__objectTransform.matrix = value.matrix;
 
 		if (!__objectTransform.__colorTransform.__equals(value.__colorTransform, true)
-			|| (!cacheAsBitmap && __objectTransform.__colorTransform.alphaMultiplier != value.__colorTransform.alphaMultiplier))
+			|| __objectTransform.__colorTransform.alphaMultiplier != value.__colorTransform.alphaMultiplier)
 		{
 			__objectTransform.__colorTransform.__copyFrom(value.colorTransform);
 			__setRenderDirty();

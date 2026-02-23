@@ -18,8 +18,7 @@ import openfl.geom.Matrix;
 
 	The type of RenderEvent dispatched will match the type of rendering being used.
 	This renderer type will match the default Stage render, but also can depend on
-	whether an off-screen render (such as DisplayObject `cacheAsBitmap` or BitmapData
-	`draw`) is being used.
+	whether an off-screen render (such BitmapData `draw`) is being used.
 **/
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')

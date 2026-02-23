@@ -33,12 +33,6 @@ import lime._internal.graphics.ImageDataUtil; // TODO
 	BitmapData object and the filter object and generates a filtered image as a
 	result.
 
-
-	If you apply a filter to a display object, the value of the
-	`cacheAsBitmap` property of the display object is set to
-	`true`. If you clear all filters, the original value of
-	`cacheAsBitmap` is restored.
-
 	This filter supports Stage scaling. However, it does not support general
 	scaling, rotation, and skewing. If the object itself is scaled(if
 	`scaleX` and `scaleY` are set to a value other than

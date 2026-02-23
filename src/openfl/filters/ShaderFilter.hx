@@ -21,10 +21,6 @@ import openfl.display.Shader;
 	object takes the source BitmapData object and the filter object and
 	generates a filtered image as a result.
 
-	If you apply a filter to a display object, the value of the
-	`cacheAsBitmap` property of the object is set to true. If you remove all
-	filters, the original value of `cacheAsBitmap` is restored.
-
 	This filter supports stage scaling. However, it does not support general
 	scaling, rotation, and skewing. If the object itself is scaled (if the
 	`scaleX` and `scaleY` properties are not set to 100%), the filter is not

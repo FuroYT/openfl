@@ -78,7 +78,6 @@ import js.Browser;
 	* `accessibilityProperties`
 	* `alpha`
 	* `blendMode`
-	* `cacheAsBitmap`
 	* `contextMenu`
 	* `filters`
 	* `focusRect`

@@ -25,10 +25,6 @@ import openfl.display.Shader;
 	object takes the source BitmapData object and the filter object and
 	generates a filtered image as a result.
 
-	If you apply a filter to a display object, the value of the
-	`cacheAsBitmap` property of the object is set to `true`. If you clear all
-	filters, the original value of `cacheAsBitmap` is restored.
-
 	A filter is not applied if the resulting image exceeds the maximum
 	dimensions. In AIR 1.5 and Flash Player 10, the maximum is 8,191 pixels in
 	width or height, and the total number of pixels cannot exceed 16,777,215

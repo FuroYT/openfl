@@ -31,10 +31,6 @@ import lime.math.Vector4;
 	object takes the source BitmapData object and the filter object and
 	generates a filtered image.
 
-	If you apply a filter to a display object, the value of the
-	`cacheAsBitmap` property of the display object is set to `true`. If you
-	clear all filters, the original value of `cacheAsBitmap` is restored.
-
 	The filter uses the following formula:
 
 	```

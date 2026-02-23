@@ -35,10 +35,6 @@ import lime.math.RGBA;
 	object takes the source BitmapData object and the filter object and
 	generates a filtered image as a result.
 
-	If you apply a filter to a display object, the `cacheAsBitmap` property of
-	the display object is set to `true`. If you remove all filters, the
-	original value of `cacheAsBitmap` is restored.
-
 	A filter is not applied if the resulting image exceeds the maximum
 	dimensions. In AIR 1.5 and Flash Player 10, the maximum is 8,191 pixels in
 	width or height, and the total number of pixels cannot exceed 16,777,215

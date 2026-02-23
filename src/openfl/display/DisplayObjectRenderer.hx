@@ -308,7 +308,7 @@ class DisplayObjectRenderer extends EventDispatcher
 						displayObject.__cacheBitmapMatrix = new Matrix();
 					}
 
-					var bitmapMatrix = (displayObject.__cacheAsBitmapMatrix != null ? displayObject.__cacheAsBitmapMatrix : displayObject.__renderTransform);
+					var bitmapMatrix = displayObject.__renderTransform;
 
 					if (!needRender
 						&& (bitmapMatrix.a != displayObject.__cacheBitmapMatrix.a
