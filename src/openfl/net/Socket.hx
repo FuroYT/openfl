@@ -1,6 +1,5 @@
 package openfl.net;
 
-#if !flash
 import haxe.io.Bytes;
 import haxe.io.BytesBuffer;
 import haxe.io.Eof;
@@ -22,9 +21,6 @@ import openfl.utils.IDataOutput;
 #if (js && html5)
 #if haxe4
 import js.lib.ArrayBuffer;
-#else
-import js.html.ArrayBuffer;
-#end
 import js.html.WebSocket;
 import js.Browser;
 #end
@@ -1220,6 +1216,3 @@ class Socket extends EventDispatcher implements IDataInput implements IDataOutpu
 		return __endian;
 	}
 }
-#else
-typedef Socket = flash.net.Socket;
-#end

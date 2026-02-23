@@ -1,6 +1,5 @@
 package openfl.display3D;
 
-#if !flash
 #if !openfljs
 #if cs
 import openfl.utils._internal.NullUtils;
@@ -10,7 +9,6 @@ import openfl.utils._internal.NullUtils;
 	Defines the values to use for specifying the Context3D render mode.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DRenderMode(Null<Int>)
-
 {
 	/**
 		Automatically choose rendering engine.
@@ -63,15 +61,10 @@ import openfl.utils._internal.NullUtils;
 	}
 	#end
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DRenderMode(String) from String to String
 
+abstract Context3DRenderMode(String) from String to String
 {
 	public var AUTO = "auto";
 	public var SOFTWARE = "software";
 }
-#end
-#else
-typedef Context3DRenderMode = flash.display3D.Context3DRenderMode;
 #end

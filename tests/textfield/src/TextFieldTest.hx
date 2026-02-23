@@ -154,26 +154,6 @@ class TextFieldTest extends Test
 		Assert.notNull(exists);
 	}
 
-	@Ignored
-	public function test_displayAsPassword()
-	{
-		var textField = new TextField();
-		textField.text = "Hello";
-
-		var textField2 = new TextField();
-		textField2.text = "Hello";
-		textField2.displayAsPassword = true;
-
-		var textField3 = new TextField();
-		textField3.text = "*****";
-
-		#if flash
-		// TODO -- textWidth is still unchanged?
-		Assert.equals(textField.textWidth, textField2.textWidth);
-		Assert.notEquals(textField3.textWidth, textField2.textWidth);
-		#end
-	}
-
 	public function test_embedFonts()
 	{
 		// TODO: Confirm functionality
@@ -242,7 +222,7 @@ class TextFieldTest extends Test
 
 		textField.text = "Hello\n\nWorld\n\nHello\n\nWorld\n\n";
 
-		#if !flash // sometimes 3, not 2?
+		// sometimes 3, not 2?
 
 		#if !html5
 		// Assert.equals (2, textField.maxScrollV);
@@ -251,15 +231,9 @@ class TextFieldTest extends Test
 
 		textField.height = 10;
 
-		#if flash
-		// should we replicate not updating until text is changed?
-		Assert.equals(2, textField.maxScrollV);
-		#end
-		#end
-
 		textField.text = textField.text;
 
-		#if (!flash && !html5) // sometimes 10, not 9?
+		#if !html5 // sometimes 10, not 9?
 
 		// Assert.equals (9, textField.maxScrollV);
 		// Assert.isTrue(textField.maxScrollV == 9 || textField.maxScrollV == 10);
@@ -317,9 +291,7 @@ class TextFieldTest extends Test
 		textField.height = 20;
 		textField.multiline = true;
 
-		#if flash
 		textField.text = textField.text;
-		#end
 
 		var textField2 = new TextField();
 		textField2.height = 20;
@@ -615,15 +587,8 @@ class TextFieldTest extends Test
 		Assert.equals(1, textField.selectionBeginIndex);
 		Assert.equals(3, textField.selectionEndIndex);
 		textField.appendText(" world");
-		#if flash
-		// for some reason, flash keeps the same selection, unless the
-		// TextField receives focus between setSelection() and appendText()
-		Assert.equals(1, textField.selectionBeginIndex);
-		Assert.equals(3, textField.selectionEndIndex);
-		#else
 		Assert.equals(11, textField.selectionBeginIndex);
 		Assert.equals(11, textField.selectionEndIndex);
-		#end
 	}
 
 	public function test_clearSelectionOnSetHtmlText()

@@ -41,7 +41,7 @@ class Window #if lime extends LimeWindow #end
 		super(application, attributes);
 		#end
 
-		#if (!flash && !macro)
+		#if !macro
 		#if commonjs
 		if (Reflect.hasField(attributes, "stage"))
 		{

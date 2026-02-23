@@ -16,24 +16,14 @@ import utest.Test;
 @:access(openfl.display.BitmapData)
 class BitmapDataTest extends Test
 {
-	#if flash
-	@Ignored
-	#end
 	public function test_fromBase64()
 	{
-		#if !flash
 		Assert.notNull(BitmapData.fromBase64);
-		#end
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_fromBytes()
 	{
-		#if !flash
 		Assert.notNull(BitmapData.fromBytes);
-		#end
 	}
 
 	#if (!js || !html5)
@@ -46,14 +36,9 @@ class BitmapDataTest extends Test
 		#end
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_fromFile()
 	{
-		#if !flash
 		Assert.notNull(BitmapData.fromFile);
-		#end
 	}
 
 	#if !lime
@@ -75,27 +60,6 @@ class BitmapDataTest extends Test
 		bitmapData = new BitmapData(100, 100);
 
 		Assert.equals(hex(0xFFFFFFFF), hex(bitmapData.getPixel32(0, 0)));
-	}
-
-	#if !flash
-	@Ignored
-	#end
-	public function test_applyFilter()
-	{
-		// TODO: Test more filters
-
-		var filter = new GlowFilter(0xFFFF0000, 1, 10, 10, 100);
-
-		var bitmapData = new BitmapData(100, 100, true, 0xFFFF0000);
-		var bitmapData2 = new BitmapData(100, 100);
-		bitmapData2.applyFilter(bitmapData, bitmapData.rect, new Point(), filter);
-
-		Assert.equals(hex(0xFFFF0000), hex(bitmapData2.getPixel32(1, 1)));
-
-		var filterRect = bitmapData2.generateFilterRect(bitmapData2.rect, filter);
-
-		Assert.isTrue(filterRect.width > 100 && filterRect.width <= 115);
-		Assert.isTrue(filterRect.height > 100 && filterRect.height <= 115);
 	}
 
 	public function test_clone()
@@ -137,7 +101,6 @@ class BitmapDataTest extends Test
 
 		// premultiplied
 
-		#if !flash
 		var colorTransform = new ColorTransform(0, 0, 0, 1, 0xFF, 0, 0, 0);
 
 		var bitmapData = new BitmapData(100, 100);
@@ -162,7 +125,6 @@ class BitmapDataTest extends Test
 
 		Assert.equals(hex(0xFF880000), hex(bitmapData.getPixel32(0, 0)));
 		Assert.equals(hex(0xFFFFFFFF), hex(bitmapData.getPixel32(50, 50)));
-		#end
 	}
 
 	public function test_compare()
@@ -274,20 +236,8 @@ class BitmapDataTest extends Test
 		var bitmapData = new BitmapData(100, 100);
 		bitmapData.dispose();
 
-		#if flash
-		try
-		{
-			bitmapData.width;
-		}
-		catch (e:Dynamic)
-		{
-			Assert.isTrue(true);
-		}
-		Assert.isTrue(true);
-		#else
 		Assert.equals(0, bitmapData.width);
 		Assert.equals(0, bitmapData.height);
-		#end
 	}
 
 	public function test_draw()
@@ -929,11 +879,7 @@ class BitmapDataTest extends Test
 	{
 		#if lime
 		var bitmapData = new BitmapData(1, 1);
-		#if flash
-		Assert.isNull(bitmapData.image);
-		#else
 		Assert.notNull(bitmapData.image);
-		#end
 		#end
 	}
 

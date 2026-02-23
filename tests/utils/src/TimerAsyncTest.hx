@@ -54,11 +54,7 @@ class TimerAsyncTest extends Test
 			Assert.isFalse(timer.running);
 			Assert.equals(1, timer.repeatCount);
 
-			#if flash
-			Assert.isTrue(timer.currentCount == 2 || timer.currentCount == 3); // TODO: timer resolution?
-			#else
 			Assert.isTrue(timer.currentCount == 1 || timer.currentCount == 2 || timer.currentCount == 3); // TODO: timer resolution?
-			#end
 			async.done();
 		}, 250);
 	}

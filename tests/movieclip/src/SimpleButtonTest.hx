@@ -19,17 +19,10 @@ class SimpleButtonTest extends Test
 
 		Assert.isFalse(button.trackAsMenu);
 
-		#if flash
-		Assert.isFalse(button.hasEventListener(MouseEvent.MOUSE_DOWN));
-		Assert.isFalse(button.hasEventListener(MouseEvent.MOUSE_OUT));
-		Assert.isFalse(button.hasEventListener(MouseEvent.MOUSE_OVER));
-		Assert.isFalse(button.hasEventListener(MouseEvent.MOUSE_UP));
-		#else
 		Assert.isTrue(button.hasEventListener(MouseEvent.MOUSE_DOWN));
 		Assert.isTrue(button.hasEventListener(MouseEvent.MOUSE_OUT));
 		Assert.isTrue(button.hasEventListener(MouseEvent.MOUSE_OVER));
 		Assert.isTrue(button.hasEventListener(MouseEvent.MOUSE_UP));
-		#end
 	}
 
 	public function test_downState()
@@ -62,12 +55,8 @@ class SimpleButtonTest extends Test
 
 		var button = new SimpleButton();
 
-		#if flash
-		Assert.isNull(button.hitTestState);
-		#else
 		Assert.notNull(button.hitTestState);
 		Assert.isOfType(button.hitTestState, DisplayObject);
-		#end
 
 		button.hitTestState = hit;
 
@@ -132,12 +121,8 @@ class SimpleButtonTest extends Test
 
 		var button = new SimpleButton();
 
-		#if flash
-		Assert.isNull(button.upState);
-		#else
 		Assert.notNull(button.upState);
 		Assert.isOfType(button.upState, DisplayObject);
-		#end
 
 		button.upState = up;
 

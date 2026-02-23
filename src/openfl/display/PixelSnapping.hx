@@ -1,7 +1,5 @@
 package openfl.display;
 
-#if !flash
-
 #if !openfljs
 /**
 	The PixelSnapping class is an enumeration of constant values for setting
@@ -9,7 +7,6 @@ package openfl.display;
 	of a Bitmap object.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract PixelSnapping(Null<Int>)
-
 {
 	/**
 		A constant value used in the `pixelSnapping` property of a
@@ -57,16 +54,11 @@ package openfl.display;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract PixelSnapping(String) from String to String
 
+abstract PixelSnapping(String) from String to String
 {
 	public var ALWAYS = "always";
 	public var AUTO = "auto";
 	public var NEVER = "never";
 }
-#end
-#else
-typedef PixelSnapping = flash.display.PixelSnapping;
 #end

@@ -1,6 +1,5 @@
 package openfl.net;
 
-#if !flash
 import openfl.events.DataEvent;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
@@ -287,11 +286,4 @@ class XMLSocket extends EventDispatcher
 				dispatchEvent(new DataEvent(DataEvent.DATA, false, false, data));
 			}
 		}
-		#else
-		dispatchEvent(new DataEvent(DataEvent.DATA, false, false, __socket.readUTFBytes(__socket.bytesAvailable)));
-		#end
-	}
-}
-#else
-typedef XMLSocket = flash.net.XMLSocket;
-#end
+		}}

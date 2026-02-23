@@ -1,6 +1,5 @@
 package openfl.media;
 
-#if !flash
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
 #if lime
@@ -149,67 +148,60 @@ import lime.media.AudioSource;
 
 		#if lime
 		return __source.currentTime + __source.offset;
-		#else
-		return 0;
-		#end
-	}
+		} @:noCompletion private function set_position(value:Float):Float
 
-	@:noCompletion private function set_position(value:Float):Float
-	{
-		if (!__isValid) return 0;
-
-		#if lime
-		__source.currentTime = Std.int(value) - __source.offset;
-		#end
-		return value;
-	}
-
-	@:noCompletion private function get_soundTransform():SoundTransform
-	{
-		return __soundTransform.clone();
-	}
-
-	@:noCompletion private function set_soundTransform(value:SoundTransform):SoundTransform
-	{
-		if (value != null)
 		{
-			__soundTransform.pan = value.pan;
-			__soundTransform.volume = value.volume;
+			if (!__isValid) return 0;
 
-			var pan = SoundMixer.__soundTransform.pan + __soundTransform.pan;
-
-			if (pan < -1) pan = -1;
-			if (pan > 1) pan = 1;
-
-			var volume = SoundMixer.__soundTransform.volume * __soundTransform.volume;
-
-			if (__isValid)
-			{
-				#if lime
-				__source.gain = volume;
-
-				var position = __source.position;
-				position.x = pan;
-				position.z = -1 * Math.sqrt(1 - Math.pow(pan, 2));
-				__source.position = position;
-
-				return value;
-				#end
-			}
+			#if lime
+			__source.currentTime = Std.int(value) - __source.offset;
+			#end
+			return value;
 		}
 
-		return value;
-	}
+		@:noCompletion private function get_soundTransform():SoundTransform
+		{
+			return __soundTransform.clone();
+		}
 
-	// Event Handlers
-	@:noCompletion private function source_onComplete():Void
-	{
-		SoundMixer.__unregisterSoundChannel(this);
+		@:noCompletion private function set_soundTransform(value:SoundTransform):SoundTransform
+		{
+			if (value != null)
+			{
+				__soundTransform.pan = value.pan;
+				__soundTransform.volume = value.volume;
 
-		__dispose();
-		dispatchEvent(new Event(Event.SOUND_COMPLETE));
-	}
-}
-#else
-typedef SoundChannel = flash.media.SoundChannel;
-#end
+				var pan = SoundMixer.__soundTransform.pan + __soundTransform.pan;
+
+				if (pan < -1) pan = -1;
+				if (pan > 1) pan = 1;
+
+				var volume = SoundMixer.__soundTransform.volume * __soundTransform.volume;
+
+				if (__isValid)
+				{
+					#if lime
+					__source.gain = volume;
+
+					var position = __source.position;
+					position.x = pan;
+					position.z = -1 * Math.sqrt(1 - Math.pow(pan, 2));
+					__source.position = position;
+
+					return value;
+					#end
+				}
+			}
+
+			return value;
+		}
+
+		// Event Handlers
+		@:noCompletion private function source_onComplete():Void
+		{
+			SoundMixer.__unregisterSoundChannel(this);
+
+			__dispose();
+			dispatchEvent(new Event(Event.SOUND_COMPLETE));
+		}
+		}

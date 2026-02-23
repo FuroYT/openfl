@@ -1,6 +1,5 @@
 package openfl.errors;
 
-#if !flash
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -14,6 +13,3 @@ class RangeError extends Error
 		name = "RangeError";
 	}
 }
-#else
-typedef RangeError = flash.errors.RangeError;
-#end

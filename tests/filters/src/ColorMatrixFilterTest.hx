@@ -23,31 +23,12 @@ class ColorMatrixFilterTest extends Test
 
 		color = new ColorMatrixFilter(matrix);
 		color_matrix = color.matrix;
-
-		#if flash
-		Assert.equals(20, color_matrix.length);
-		#else
 		Assert.equals(matrix.length, color_matrix.length);
-		#end
 
-		#if flash
-		for (i in 0...color_matrix.length)
-		{
-			if (i < matrix.length)
-			{
-				Assert.equals(matrix[i], color_matrix[i]);
-			}
-			else
-			{
-				Assert.equals(0.0, color_matrix[i]);
-			}
-		}
-		#else
 		for (i in 0...matrix.length)
 		{
 			Assert.equals(matrix[i], color_matrix[i]);
 		}
-		#end
 	}
 
 	public function test_clone()
@@ -61,14 +42,7 @@ class ColorMatrixFilterTest extends Test
 
 		var result = cast(color_clone, ColorMatrixFilter).matrix;
 
-		#if flash
-		for (i in 0...matrix.length)
-		{
-			Assert.equals(matrix[i], result[i]);
-		}
-		#else
 		Assert.equals(matrix, result);
-		#end
 	}
 
 	public function test_matrix()
@@ -79,7 +53,6 @@ class ColorMatrixFilterTest extends Test
 		var color = new ColorMatrixFilter();
 		var color_matrix = null;
 
-		#if !flash
 		color.matrix = null;
 
 		var color_matrix = color.matrix;
@@ -96,29 +69,11 @@ class ColorMatrixFilterTest extends Test
 
 		color_matrix = color.matrix;
 
-		#if flash
-		Assert.equals(20, color_matrix.length);
-		#else
 		Assert.equals(matrix.length, color_matrix.length);
-		#end
 
-		#if flash
-		for (i in 0...color_matrix.length)
-		{
-			if (i < matrix.length)
-			{
-				Assert.equals(matrix[i], color_matrix[i]);
-			}
-			else
-			{
-				Assert.equals(0.0, color_matrix[i]);
-			}
-		}
-		#else
 		for (i in 0...matrix.length)
 		{
 			Assert.equals(matrix[i], color_matrix[i]);
 		}
-		#end
 	}
 }

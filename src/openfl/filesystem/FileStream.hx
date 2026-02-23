@@ -1,6 +1,6 @@
 package openfl.filesystem;
 
-#if (haxe4 && sys && !flash)
+#if (haxe4 && sys)
 import haxe.Json;
 import haxe.Serializer;
 import haxe.Timer;
@@ -71,8 +71,7 @@ import format.amf3.Tools as AMF3Tools;
 @:access(openfl.utils.ByteArrayData)
 @:access(openfl.filesystem.File)
 #if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
+@:fileXml('tags="haxe,release"') @:noDebug
 #end
 class FileStream extends EventDispatcher implements IDataInput implements IDataOutput
 {
@@ -1625,8 +1624,4 @@ class FileStream extends EventDispatcher implements IDataInput implements IDataO
 		return position = value;
 	}
 }
-#elseif flash
-#if air
-typedef FileStream = flash.filesystem.FileStream;
-#end
 #end

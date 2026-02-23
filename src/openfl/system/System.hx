@@ -1,15 +1,11 @@
 package openfl.system;
 
-#if !flash
 #if lime
 import lime.system.Clipboard;
 import lime.system.System as LimeSystem;
 #end
 #if neko
 import neko.vm.Gc;
-#elseif cpp
-import cpp.vm.Gc;
-#end
 
 /**
 	The System class contains properties related to local settings and
@@ -40,7 +36,6 @@ import cpp.vm.Gc;
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10_1) public static var freeMemory (default, null):Float;
 	#end
-
 	#if false
 	/**
 		The currently installed system IME. To register for imeComposition
@@ -48,7 +43,6 @@ import cpp.vm.Gc;
 	**/
 	// @:noCompletion @:dox(hide) public static var ime (default, null):openfl.system.IME;
 	#end
-
 	#if false
 	/**
 		The entire amount of memory (in bytes) used by an application. This is
@@ -272,6 +266,3 @@ import cpp.vm.Gc;
 		return "1.0.0";
 	}
 }
-#else
-typedef System = flash.system.System;
-#end

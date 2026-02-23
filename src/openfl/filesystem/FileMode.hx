@@ -1,8 +1,7 @@
 package openfl.filesystem;
 
-#if (!flash && sys)
+#if sys
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract FileMode(String) from String to String
-
 {
 	/**
 		Used for a file to be opened in write mode, with all written data appended to the end of the file.
@@ -27,7 +26,4 @@ package openfl.filesystem;
 	var WRITE:String = "write";
 }
 #else
-#if air
-typedef FileMode = flash.filesystem.FileMode;
-#end
 #end

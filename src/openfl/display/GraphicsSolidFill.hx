@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.GraphicsDataType;
 import openfl.display._internal.GraphicsFillType;
 
@@ -50,6 +49,3 @@ import openfl.display._internal.GraphicsFillType;
 		this.__graphicsFillType = SOLID_FILL;
 	}
 }
-#else
-typedef GraphicsSolidFill = flash.display.GraphicsSolidFill;
-#end

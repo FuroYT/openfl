@@ -1,6 +1,5 @@
 package openfl.errors;
 
-#if !flash
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -14,6 +13,3 @@ class SecurityError extends Error
 		name = "SecurityError";
 	}
 }
-#else
-typedef SecurityError = flash.errors.SecurityError;
-#end

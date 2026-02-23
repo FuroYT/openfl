@@ -1,6 +1,5 @@
 package openfl.display3D;
 
-#if !flash
 #if !openfljs
 #if cs
 import openfl.utils._internal.NullUtils;
@@ -9,9 +8,7 @@ import openfl.utils._internal.NullUtils;
 /**
 	Constants to specify the orientation of a triangle relative to the view point.
 **/
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DTriangleFace(Null<Int>)
-
+@SuppressWarnings("checkstyle:FieldDocComment") #if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DTriangleFace(Null<Int>)
 {
 	public var BACK = 0;
 	public var FRONT = 1;
@@ -56,17 +53,12 @@ import openfl.utils._internal.NullUtils;
 	}
 	#end
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DTriangleFace(String) from String to String
 
+abstract Context3DTriangleFace(String) from String to String
 {
 	public var BACK = "back";
 	public var FRONT = "front";
 	public var FRONT_AND_BACK = "frontAndBack";
 	public var NONE = "none";
 }
-#end
-#else
-typedef Context3DTriangleFace = flash.display3D.Context3DTriangleFace;
 #end

@@ -26,8 +26,6 @@ Currently, OpenFL supports the following platforms:
  * Windows
  * macOS
  * Linux
- * Flash
- * AIR
 
 There is also a community effort to bring OpenFL to consoles, OpenFL is running on:
 

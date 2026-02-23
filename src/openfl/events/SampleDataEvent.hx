@@ -1,6 +1,5 @@
 package openfl.events;
 
-#if !flash
 // import openfl.utils.ObjectPool;
 import openfl.utils.ByteArray;
 import openfl.utils.Endian;
@@ -151,6 +150,3 @@ class SampleDataEvent extends Event
 		position = 0.0;
 	}
 }
-#else
-typedef SampleDataEvent = flash.events.SampleDataEvent;
-#end

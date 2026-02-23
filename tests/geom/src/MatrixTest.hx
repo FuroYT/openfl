@@ -137,12 +137,9 @@ class MatrixTest extends Test
 		Assert.equals(12.0, dest.ty);
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_copyColumnFrom()
 	{
-		#if !flash // Flash is behaving the same as copyRowFrom?
+		// Flash is behaving the same as copyRowFrom?
 		var a = 1, b = 2, c = 3, d = 4, tx = 5, ty = 6;
 		var x = 10, y = 11, z = 12, w = 13;
 
@@ -191,7 +188,6 @@ class MatrixTest extends Test
 		Assert.equals(y, vector3D.y);
 		Assert.equals(z, vector3D.z);
 		Assert.equals(w, vector3D.w);
-		#end
 	}
 
 	public function test_copyColumnTo()

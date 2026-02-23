@@ -1,6 +1,5 @@
 package openfl.filters;
 
-#if !flash
 import openfl.display.BitmapDataChannel;
 import openfl.geom.Rectangle;
 import openfl.geom.Point;
@@ -216,8 +215,7 @@ import lime.math.Vector4;
 		return new DisplacementMapFilter(__mapBitmap, __mapPoint.clone(), __componentX, __componentY, __scaleX, __scaleY, __mode, __color, __alpha);
 	}
 
-	@:noCompletion private override function __applyFilter(bitmapData:BitmapData, sourceBitmapData:BitmapData, sourceRect:Rectangle,
-			destPoint:Point):BitmapData
+	@:noCompletion private override function __applyFilter(bitmapData:BitmapData, sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point):BitmapData
 	{
 		#if lime
 		__updateMapMatrix();
@@ -448,6 +446,3 @@ private class DisplacementMapShader extends BitmapFilterShader
 		super();
 	}
 }
-#else
-typedef DisplacementMapFilter = flash.filters.DisplacementMapFilter;
-#end

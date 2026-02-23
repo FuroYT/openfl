@@ -1,6 +1,5 @@
 package openfl.media;
 
-#if !flash
 import haxe.Int64;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
@@ -355,360 +354,353 @@ class Sound extends EventDispatcher
 	{
 		#if lime
 		return fromAudioBuffer(AudioBuffer.fromFile(path));
-		#else
-		return null;
-		#end
-	}
+		} /**
+			Initiates loading of an external MP3 file from the specified URL. If you
+			provide a valid URLRequest object to the Sound constructor, the
+			constructor calls `Sound.load()` for you. You only need to call
+			`Sound.load()` yourself if you don't pass a valid URLRequest
+			object to the Sound constructor or you pass a `null` value.
 
-	/**
-		Initiates loading of an external MP3 file from the specified URL. If you
-		provide a valid URLRequest object to the Sound constructor, the
-		constructor calls `Sound.load()` for you. You only need to call
-		`Sound.load()` yourself if you don't pass a valid URLRequest
-		object to the Sound constructor or you pass a `null` value.
+			Once `load()` is called on a Sound object, you can't later
+			load a different sound file into that Sound object. To load a different
+			sound file, create a new Sound object.
 
-		Once `load()` is called on a Sound object, you can't later
-		load a different sound file into that Sound object. To load a different
-		sound file, create a new Sound object.
+			When using this method, consider the following security model:
 
-		When using this method, consider the following security model:
+			* Calling `Sound.load()` is not allowed if the calling file
+			is in the local-with-file-system sandbox and the sound is in a network
+			sandbox.
+			* Access from the local-trusted or local-with-networking sandbox
+			requires permission from a website through a URL policy file.
+			* You cannot connect to commonly reserved ports. For a complete list
+			of blocked ports, see "Restricting Networking APIs" in the _ActionScript
+			3.0 Developer's Guide_.
+			* You can prevent a SWF file from using this method by setting the
+			`allowNetworking` parameter of the `object` and
+			`embed` tags in the HTML page that contains the SWF
+			content.
 
-		* Calling `Sound.load()` is not allowed if the calling file
-		is in the local-with-file-system sandbox and the sound is in a network
-		sandbox.
-		* Access from the local-trusted or local-with-networking sandbox
-		requires permission from a website through a URL policy file.
-		* You cannot connect to commonly reserved ports. For a complete list
-		of blocked ports, see "Restricting Networking APIs" in the _ActionScript
-		3.0 Developer's Guide_.
-		* You can prevent a SWF file from using this method by setting the
-		`allowNetworking` parameter of the `object` and
-		`embed` tags in the HTML page that contains the SWF
-		content.
+			 In Flash Player 10 and later, if you use a multipart Content-Type(for
+			example "multipart/form-data") that contains an upload(indicated by a
+			"filename" parameter in a "content-disposition" header within the POST
+			body), the POST operation is subject to the security rules applied to
+			uploads:
 
-		 In Flash Player 10 and later, if you use a multipart Content-Type(for
-		example "multipart/form-data") that contains an upload(indicated by a
-		"filename" parameter in a "content-disposition" header within the POST
-		body), the POST operation is subject to the security rules applied to
-		uploads:
-
-		* The POST operation must be performed in response to a user-initiated
-		action, such as a mouse click or key press.
-		* If the POST operation is cross-domain(the POST target is not on the
-		same server as the SWF file that is sending the POST request), the target
-		server must provide a URL policy file that permits cross-domain
-		access.
+			* The POST operation must be performed in response to a user-initiated
+			action, such as a mouse click or key press.
+			* If the POST operation is cross-domain(the POST target is not on the
+			same server as the SWF file that is sending the POST request), the target
+			server must provide a URL policy file that permits cross-domain
+			access.
 
 
-		Also, for any multipart Content-Type, the syntax must be valid
-		(according to the RFC2046 standards). If the syntax appears to be invalid,
-		the POST operation is subject to the security rules applied to
-		uploads.
+			Also, for any multipart Content-Type, the syntax must be valid
+			(according to the RFC2046 standards). If the syntax appears to be invalid,
+			the POST operation is subject to the security rules applied to
+			uploads.
 
-		In Adobe AIR, content in the `application` security sandbox
-		(content installed with the AIR application) are not restricted by these
-		security limitations.
+			In Adobe AIR, content in the `application` security sandbox
+			(content installed with the AIR application) are not restricted by these
+			security limitations.
 
-		For more information related to security, see the Flash Player
-		Developer Center Topic: [Security](http://www.adobe.com/go/devnet_security_en).
+			For more information related to security, see the Flash Player
+			Developer Center Topic: [Security](http://www.adobe.com/go/devnet_security_en).
 
-		@param stream  A URL that points to an external MP3 file.
-		@param context An optional SoundLoader context object, which can define
-					   the buffer time(the minimum number of milliseconds of MP3
-					   data to hold in the Sound object's buffer) and can specify
-					   whether the application should check for a cross-domain
-					   policy file prior to loading the sound.
-		@throws IOError       A network error caused the load to fail.
-		@throws IOError       The `digest` property of the
-							  `stream` object is not `null`.
-							  You should only set the `digest` property
-							  of a URLRequest object when calling the
-							  `URLLoader.load()` method when loading a
-							  SWZ file(an Adobe platform component).
-		@throws SecurityError Local untrusted files may not communicate with the
-							  Internet. You can work around this by reclassifying
-							  this file as local-with-networking or trusted.
-		@throws SecurityError You cannot connect to commonly reserved ports. For a
-							  complete list of blocked ports, see "Restricting
-							  Networking APIs" in the _ActionScript 3.0
-							  Developer's Guide_.
-	**/
-	public function load(stream:URLRequest, context:SoundLoaderContext = null):Void
-	{
-		url = stream.url;
+			@param stream  A URL that points to an external MP3 file.
+			@param context An optional SoundLoader context object, which can define
+						   the buffer time(the minimum number of milliseconds of MP3
+						   data to hold in the Sound object's buffer) and can specify
+						   whether the application should check for a cross-domain
+						   policy file prior to loading the sound.
+			@throws IOError       A network error caused the load to fail.
+			@throws IOError       The `digest` property of the
+								  `stream` object is not `null`.
+								  You should only set the `digest` property
+								  of a URLRequest object when calling the
+								  `URLLoader.load()` method when loading a
+								  SWZ file(an Adobe platform component).
+			@throws SecurityError Local untrusted files may not communicate with the
+								  Internet. You can work around this by reclassifying
+								  this file as local-with-networking or trusted.
+			@throws SecurityError You cannot connect to commonly reserved ports. For a
+								  complete list of blocked ports, see "Restricting
+								  Networking APIs" in the _ActionScript 3.0
+								  Developer's Guide_.
+		**/
 
-		#if lime
-		#if (js && html5)
-		var defaultLibrary = lime.utils.Assets.getLibrary("default"); // TODO: Improve this
-
-		if (defaultLibrary != null && defaultLibrary.cachedAudioBuffers.exists(url))
+		public function load(stream:URLRequest, context:SoundLoaderContext = null):Void
 		{
-			AudioBuffer_onURLLoad(defaultLibrary.cachedAudioBuffers.get(url));
-		}
-		else
-		{
+			url = stream.url;
+
+			#if lime
+			#if (js && html5)
+			var defaultLibrary = lime.utils.Assets.getLibrary("default"); // TODO: Improve this
+
+			if (defaultLibrary != null && defaultLibrary.cachedAudioBuffers.exists(url))
+			{
+				AudioBuffer_onURLLoad(defaultLibrary.cachedAudioBuffers.get(url));
+			}
+			else
+			{
+				AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_)
+				{
+					AudioBuffer_onURLLoad(null);
+				});
+			}
+			#else
 			AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_)
 			{
 				AudioBuffer_onURLLoad(null);
 			});
-		}
-		#else
-		AudioBuffer.loadFromFile(url).onComplete(AudioBuffer_onURLLoad).onError(function(_)
-		{
-			AudioBuffer_onURLLoad(null);
-		});
-		#end
-		#end
-	}
-
-	/**
-		Load MP3 sound data from a ByteArray object into a Sound object. The data will be read from the current
-		ByteArray position and will leave the ByteArray position at the end of the specified bytes length once
-		finished. If the MP3 sound data contains ID3 data ID3 events will be dispatched during this function call.
-		This function will throw an exception if the ByteArray object does not contain enough data.
-
-		@param	bytes
-		@param	bytesLength
-	**/
-	public function loadCompressedDataFromByteArray(bytes:ByteArray, bytesLength:Int):Void
-	{
-		if (bytes == null || bytesLength <= 0)
-		{
-			dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
-			return;
+			#end
+			#end
 		}
 
-		if (bytes.position > 0 || bytes.length > bytesLength)
+		/**
+			Load MP3 sound data from a ByteArray object into a Sound object. The data will be read from the current
+			ByteArray position and will leave the ByteArray position at the end of the specified bytes length once
+			finished. If the MP3 sound data contains ID3 data ID3 events will be dispatched during this function call.
+			This function will throw an exception if the ByteArray object does not contain enough data.
+
+			@param	bytes
+			@param	bytesLength
+		**/
+		public function loadCompressedDataFromByteArray(bytes:ByteArray, bytesLength:Int):Void
 		{
-			var copy = new ByteArray(bytesLength);
-			copy.writeBytes(bytes, bytes.position, bytesLength);
-			bytes = copy;
-		}
-
-		#if lime
-		__buffer = AudioBuffer.fromBytes(bytes);
-
-		if (__buffer == null)
-		{
-			dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
-		}
-		else
-		{
-			dispatchEvent(new Event(Event.COMPLETE));
-		}
-		#else
-		dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
-		#end
-	}
-
-	/**
-		Creates a new Sound from a file path or web address asynchronously. The file
-		load will occur in the background.
-
-		Progress, completion and error callbacks will be dispatched in the current
-		thread using callbacks attached to a returned Future object.
-
-		@param	path	A local file path or web address containing a sound
-		@returns	A Future Sound
-	**/
-	public static function loadFromFile(path:String):Future<Sound>
-	{
-		#if lime
-		return AudioBuffer.loadFromFile(path).then(function(audioBuffer)
-		{
-			return Future.withValue(fromAudioBuffer(audioBuffer));
-		});
-		#else
-		return cast Future.withError("Cannot load audio file");
-		#end
-	}
-
-	/**
-		Creates a new Sound from a set of file paths or web addresses asynchronously.
-		The audio backend will choose the first compatible file format, and will load the file
-		it selects in the background.
-
-		Progress, completion and error callbacks will be dispatched in the current
-		thread using callbacks attached to a returned Future object.
-
-		@param	paths	A set of local file paths or web addresses containing sound
-		@returns	A Future Sound
-	**/
-	public static function loadFromFiles(paths:Array<String>):Future<Sound>
-	{
-		#if lime
-		return AudioBuffer.loadFromFiles(paths).then(function(audioBuffer)
-		{
-			return Future.withValue(fromAudioBuffer(audioBuffer));
-		});
-		#else
-		return cast Future.withError("Cannot load audio files");
-		#end
-	}
-
-	/**
-		Load PCM 32-bit floating point sound data from a ByteArray object into a Sound object. The data will be read
-		from the current ByteArray position and will leave the ByteArray position at the end of the specified sample
-		length multiplied by either 1 channel or 2 channels if the stereo flag is set once finished.
-
-		Starting with Flash Player 11.8, the amount of audio data that can be passed to this function is limited. For
-		SWF versions >= 21, this function throws an exception if the amount of audio data passed into this function is
-		more than 1800 seconds. That is, samples / sampleRate should be less than or equal to 1800. For swf versions <
-		21, the runtime fails silently if the amount of audio data passed in is more than 12000 seconds. This is
-		provided only for backward compatibility.
-
-		This function throws an exception if the ByteArray object does not contain enough data.
-
-		@param	bytes
-		@param	samples
-		@param	format
-		@param	stereo
-		@param	sampleRate
-	**/
-	public function loadPCMFromByteArray(bytes:ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100):Void
-	{
-		if (bytes == null)
-		{
-			dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
-			return;
-		}
-
-		var bitsPerSample = (format == "float" ? 32 : 16); // "short"
-		var channels = (stereo ? 2 : 1);
-		var bytesLength = Std.int(samples * channels * (bitsPerSample / 8));
-
-		if (bytes.position > 0 || bytes.length > bytesLength)
-		{
-			var copy = new ByteArray(bytesLength);
-			copy.writeBytes(bytes, bytes.position, bytesLength);
-			bytes = copy;
-		}
-
-		#if lime
-		var audioBuffer = new AudioBuffer();
-		audioBuffer.bitsPerSample = bitsPerSample;
-		audioBuffer.channels = channels;
-		audioBuffer.data = new UInt8Array(bytes);
-		audioBuffer.sampleRate = Std.int(sampleRate);
-
-		__buffer = audioBuffer;
-
-		dispatchEvent(new Event(Event.COMPLETE));
-		#else
-		dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
-		#end
-	}
-
-	/**
-		Generates a new SoundChannel object to play back the sound. This method
-		returns a SoundChannel object, which you access to stop the sound and to
-		monitor volume.(To control the volume, panning, and balance, access the
-		SoundTransform object assigned to the sound channel.)
-
-		@param startTime    The initial position in milliseconds at which playback
-							should start.
-		@param loops        Defines the number of times a sound loops back to the
-							`startTime` value before the sound channel
-							stops playback.
-		@param sndTransform The initial SoundTransform object assigned to the
-							sound channel.
-		@return A SoundChannel object, which you use to control the sound. This
-				method returns `null` if you have no sound card or if
-				you run out of available sound channels. The maximum number of
-				sound channels available at once is 32.
-	**/
-	public function play(startTime:Float = 0.0, loops:Int = 0, sndTransform:SoundTransform = null):SoundChannel
-	{
-		#if lime
-		if (__buffer == null || SoundMixer.__soundChannels.length >= SoundMixer.MAX_ACTIVE_CHANNELS)
-		{
-			return null;
-		}
-
-		if (sndTransform == null)
-		{
-			sndTransform = new SoundTransform();
-		}
-		else
-		{
-			sndTransform = sndTransform.clone();
-		}
-
-		var pan = SoundMixer.__soundTransform.pan + sndTransform.pan;
-
-		if (pan > 1) pan = 1;
-		if (pan < -1) pan = -1;
-
-		var volume = SoundMixer.__soundTransform.volume * sndTransform.volume;
-
-		var source = new AudioSource(__buffer);
-		source.offset = Std.int(startTime);
-		if (loops > 1) source.loops = loops - 1;
-
-		source.gain = volume;
-
-		var position = source.position;
-		position.x = pan;
-		position.z = -1 * Math.sqrt(1 - Math.pow(pan, 2));
-		source.position = position;
-
-		return new SoundChannel(source, sndTransform);
-		#else
-		return null;
-		#end
-	}
-
-	// Get & Set Methods
-	@:noCompletion private function get_id3():ID3Info
-	{
-		return new ID3Info();
-	}
-
-	@:noCompletion private function get_length():Int
-	{
-		#if lime
-		if (__buffer != null)
-		{
-			#if (js && html5 && howlerjs)
-			return Std.int(__buffer.src.duration() * 1000);
-			#else
-			if (__buffer.data != null)
+			if (bytes == null || bytesLength <= 0)
 			{
-				var samples = (__buffer.data.length * 8) / (__buffer.channels * __buffer.bitsPerSample);
-				return Std.int(samples / __buffer.sampleRate * 1000);
+				dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
+				return;
 			}
-			else if (__buffer.__srcVorbisFile != null)
+
+			if (bytes.position > 0 || bytes.length > bytesLength)
 			{
-				var samples = Int64.toInt(__buffer.__srcVorbisFile.pcmTotal());
-				return Std.int(samples / __buffer.sampleRate * 1000);
+				var copy = new ByteArray(bytesLength);
+				copy.writeBytes(bytes, bytes.position, bytesLength);
+				bytes = copy;
+			}
+
+			#if lime
+			__buffer = AudioBuffer.fromBytes(bytes);
+
+			if (__buffer == null)
+			{
+				dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
 			}
 			else
 			{
-				return 0;
+				dispatchEvent(new Event(Event.COMPLETE));
 			}
+			#else
+			dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
 			#end
 		}
-		#end
 
-		return 0;
-	}
+		/**
+			Creates a new Sound from a file path or web address asynchronously. The file
+			load will occur in the background.
 
-	// Event Handlers
-	#if lime
-	@:noCompletion private function AudioBuffer_onURLLoad(buffer:AudioBuffer):Void
-	{
-		if (buffer == null)
+			Progress, completion and error callbacks will be dispatched in the current
+			thread using callbacks attached to a returned Future object.
+
+			@param	path	A local file path or web address containing a sound
+			@returns	A Future Sound
+		**/
+		public static function loadFromFile(path:String):Future<Sound>
 		{
-			dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
+			#if lime
+			return AudioBuffer.loadFromFile(path).then(function(audioBuffer)
+			{
+				return Future.withValue(fromAudioBuffer(audioBuffer));
+			});
+			#else
+			return cast Future.withError("Cannot load audio file");
+			#end
 		}
-		else
+
+		/**
+			Creates a new Sound from a set of file paths or web addresses asynchronously.
+			The audio backend will choose the first compatible file format, and will load the file
+			it selects in the background.
+
+			Progress, completion and error callbacks will be dispatched in the current
+			thread using callbacks attached to a returned Future object.
+
+			@param	paths	A set of local file paths or web addresses containing sound
+			@returns	A Future Sound
+		**/
+		public static function loadFromFiles(paths:Array<String>):Future<Sound>
 		{
-			__buffer = buffer;
+			#if lime
+			return AudioBuffer.loadFromFiles(paths).then(function(audioBuffer)
+			{
+				return Future.withValue(fromAudioBuffer(audioBuffer));
+			});
+			#else
+			return cast Future.withError("Cannot load audio files");
+			#end
+		}
+
+		/**
+			Load PCM 32-bit floating point sound data from a ByteArray object into a Sound object. The data will be read
+			from the current ByteArray position and will leave the ByteArray position at the end of the specified sample
+			length multiplied by either 1 channel or 2 channels if the stereo flag is set once finished.
+
+			Starting with Flash Player 11.8, the amount of audio data that can be passed to this function is limited. For
+			SWF versions >= 21, this function throws an exception if the amount of audio data passed into this function is
+			more than 1800 seconds. That is, samples / sampleRate should be less than or equal to 1800. For swf versions <
+			21, the runtime fails silently if the amount of audio data passed in is more than 12000 seconds. This is
+			provided only for backward compatibility.
+
+			This function throws an exception if the ByteArray object does not contain enough data.
+
+			@param	bytes
+			@param	samples
+			@param	format
+			@param	stereo
+			@param	sampleRate
+		**/
+		public function loadPCMFromByteArray(bytes:ByteArray, samples:Int, format:String = "float", stereo:Bool = true, sampleRate:Float = 44100):Void
+		{
+			if (bytes == null)
+			{
+				dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
+				return;
+			}
+
+			var bitsPerSample = (format == "float" ? 32 : 16); // "short"
+			var channels = (stereo ? 2 : 1);
+			var bytesLength = Std.int(samples * channels * (bitsPerSample / 8));
+
+			if (bytes.position > 0 || bytes.length > bytesLength)
+			{
+				var copy = new ByteArray(bytesLength);
+				copy.writeBytes(bytes, bytes.position, bytesLength);
+				bytes = copy;
+			}
+
+			#if lime
+			var audioBuffer = new AudioBuffer();
+			audioBuffer.bitsPerSample = bitsPerSample;
+			audioBuffer.channels = channels;
+			audioBuffer.data = new UInt8Array(bytes);
+			audioBuffer.sampleRate = Std.int(sampleRate);
+
+			__buffer = audioBuffer;
+
 			dispatchEvent(new Event(Event.COMPLETE));
+			#else
+			dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
+			#end
 		}
-	}
-	#end
-}
-#else
-typedef Sound = flash.media.Sound;
-#end
+
+		/**
+			Generates a new SoundChannel object to play back the sound. This method
+			returns a SoundChannel object, which you access to stop the sound and to
+			monitor volume.(To control the volume, panning, and balance, access the
+			SoundTransform object assigned to the sound channel.)
+
+			@param startTime    The initial position in milliseconds at which playback
+								should start.
+			@param loops        Defines the number of times a sound loops back to the
+								`startTime` value before the sound channel
+								stops playback.
+			@param sndTransform The initial SoundTransform object assigned to the
+								sound channel.
+			@return A SoundChannel object, which you use to control the sound. This
+					method returns `null` if you have no sound card or if
+					you run out of available sound channels. The maximum number of
+					sound channels available at once is 32.
+		**/
+		public function play(startTime:Float = 0.0, loops:Int = 0, sndTransform:SoundTransform = null):SoundChannel
+		{
+			#if lime
+			if (__buffer == null || SoundMixer.__soundChannels.length >= SoundMixer.MAX_ACTIVE_CHANNELS)
+			{
+				return null;
+			}
+
+			if (sndTransform == null)
+			{
+				sndTransform = new SoundTransform();
+			}
+			else
+			{
+				sndTransform = sndTransform.clone();
+			}
+
+			var pan = SoundMixer.__soundTransform.pan + sndTransform.pan;
+
+			if (pan > 1) pan = 1;
+			if (pan < -1) pan = -1;
+
+			var volume = SoundMixer.__soundTransform.volume * sndTransform.volume;
+
+			var source = new AudioSource(__buffer);
+			source.offset = Std.int(startTime);
+			if (loops > 1) source.loops = loops - 1;
+
+			source.gain = volume;
+
+			var position = source.position;
+			position.x = pan;
+			position.z = -1 * Math.sqrt(1 - Math.pow(pan, 2));
+			source.position = position;
+
+			return new SoundChannel(source, sndTransform);
+			#else
+			return null;
+			#end
+		}
+
+		// Get & Set Methods
+		@:noCompletion private function get_id3():ID3Info
+		{
+			return new ID3Info();
+		}
+
+		@:noCompletion private function get_length():Int
+		{
+			#if lime
+			if (__buffer != null)
+			{
+				#if (js && html5 && howlerjs)
+				return Std.int(__buffer.src.duration() * 1000);
+				#else
+				if (__buffer.data != null)
+				{
+					var samples = (__buffer.data.length * 8) / (__buffer.channels * __buffer.bitsPerSample);
+					return Std.int(samples / __buffer.sampleRate * 1000);
+				}
+				else if (__buffer.__srcVorbisFile != null)
+				{
+					var samples = Int64.toInt(__buffer.__srcVorbisFile.pcmTotal());
+					return Std.int(samples / __buffer.sampleRate * 1000);
+				}
+				else
+				{
+					return 0;
+				}
+				#end
+			}
+			#end
+
+			return 0;
+		}
+
+		// Event Handlers
+		#if lime
+		@:noCompletion private function AudioBuffer_onURLLoad(buffer:AudioBuffer):Void
+		{
+			if (buffer == null)
+			{
+				dispatchEvent(new IOErrorEvent(IOErrorEvent.IO_ERROR));
+			}
+			else
+			{
+				__buffer = buffer;
+				dispatchEvent(new Event(Event.COMPLETE));
+			}
+		}
+		#end
+		}

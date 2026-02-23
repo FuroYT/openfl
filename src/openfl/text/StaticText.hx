@@ -1,6 +1,5 @@
 package openfl.text;
 
-#if !flash
 import openfl.display.DisplayObject;
 import openfl.display.Graphics;
 
@@ -48,7 +47,3 @@ class StaticText extends DisplayObject
 		__graphics = new Graphics(this);
 	}
 }
-#else
-typedef StaticText = flash.text.StaticText;
-typedef StaticText2 = flash.text.StaticText.StaticText2;
-#end

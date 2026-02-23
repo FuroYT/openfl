@@ -1,6 +1,5 @@
 package openfl.errors;
 
-#if !flash
 import haxe.CallStack;
 
 /**
@@ -56,73 +55,65 @@ class Error #if (haxe_ver >= "4.1.0") extends haxe.Exception #elseif (openfl_dyn
 	{
 		#if (haxe_ver >= "4.1.0")
 		super(message);
-		#else
-		this.message = message;
-		#end
 
 		this.errorID = id;
 		name = "Error";
-	}
+		} // @:noCompletion @:dox(hide) public static function getErrorMessage (index:Int):String;
 
-	// @:noCompletion @:dox(hide) public static function getErrorMessage (index:Int):String;
+		/**
+			Returns the call stack for an error at the time of the error's construction as a
+			string. As shown in the following example, the first line of the return value is
+			the string representation of the exception object, followed by the stack trace
+			elements:
 
-	/**
-		Returns the call stack for an error at the time of the error's construction as a
-		string. As shown in the following example, the first line of the return value is
-		the string representation of the exception object, followed by the stack trace
-		elements:
+			```
+			TypeError: Error #1009: Cannot access a property or method of a null object reference
+				at com.xyz::OrderEntry/retrieveData()[/src/com/xyz/OrderEntry.as:995]
+				at com.xyz::OrderEntry/init()[/src/com/xyz/OrderEntry.as:200]
+				at com.xyz::OrderEntry()[/src/com/xyz/OrderEntry.as:148]
+			```
 
-		```
-		TypeError: Error #1009: Cannot access a property or method of a null object reference
-			at com.xyz::OrderEntry/retrieveData()[/src/com/xyz/OrderEntry.as:995]
-			at com.xyz::OrderEntry/init()[/src/com/xyz/OrderEntry.as:200]
-			at com.xyz::OrderEntry()[/src/com/xyz/OrderEntry.as:148]
-		```
+			The preceding listing shows the value of this method when called in a debugger
+			version of Flash Player or code running in the AIR Debug Launcher (ADL). When code
+			runs in a release version of Flash Player or AIR, the stack trace is provided
+			without the file path and line number information, as in the following example:
 
-		The preceding listing shows the value of this method when called in a debugger
-		version of Flash Player or code running in the AIR Debug Launcher (ADL). When code
-		runs in a release version of Flash Player or AIR, the stack trace is provided
-		without the file path and line number information, as in the following example:
+			```
+			TypeError: Error #1009: Cannot access a property or method of a null object reference
+				at com.xyz::OrderEntry/retrieveData()
+				at com.xyz::OrderEntry/init()
+				at com.xyz::OrderEntry()
+			```
 
-		```
-		TypeError: Error #1009: Cannot access a property or method of a null object reference
-			at com.xyz::OrderEntry/retrieveData()
-			at com.xyz::OrderEntry/init()
-			at com.xyz::OrderEntry()
-		```
+			For Flash Player 11.4 and earlier and AIR 3.4 and earlier, stack traces are only
+			available when code is running in the debugger version of Flash Player or the AIR
+			Debug Launcher (ADL). In non-debugger versions of those runtimes, calling this
+			method returns `null`.
 
-		For Flash Player 11.4 and earlier and AIR 3.4 and earlier, stack traces are only
-		available when code is running in the debugger version of Flash Player or the AIR
-		Debug Launcher (ADL). In non-debugger versions of those runtimes, calling this
-		method returns `null`.
-
-		@returns	A string representation of the call stack.
-	**/
-	public function getStackTrace():String
-	{
-		return CallStack.toString(CallStack.exceptionStack());
-	}
-
-	// @:noCompletion @:dox(hide) public static function throwError (type:Class<Dynamic>, index:UInt, ?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Dynamic;
-
-	/**
-		Returns the string "Error" by default or the value contained in the `Error.message`
-		property, if defined.
-
-		@returns	The error message.
-	**/
-	public #if (haxe_ver >= "4.1.0") override #end function toString():String
-	{
-		if (message != null)
+			@returns	A string representation of the call stack.
+		**/
+		public function getStackTrace():String
 		{
-			return message;
+			return CallStack.toString(CallStack.exceptionStack());
 		}
-		else
+
+		// @:noCompletion @:dox(hide) public static function throwError (type:Class<Dynamic>, index:UInt, ?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Dynamic;
+
+		/**
+			Returns the string "Error" by default or the value contained in the `Error.message`
+			property, if defined.
+
+			@returns	The error message.
+		**/
+		public #if (haxe_ver >= "4.1.0") override #end function toString():String
 		{
-			return DEFAULT_TO_STRING;
+			if (message != null)
+			{
+				return message;
+			}
+			else
+			{
+				return DEFAULT_TO_STRING;
+			}
 		}
-	}
-}
-#else
-typedef Error = flash.errors.Error;
-#end
+		}

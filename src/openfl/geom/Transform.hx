@@ -1,6 +1,5 @@
 package openfl.geom;
 
-#if !flash
 import openfl.display.DisplayObject;
 
 /**
@@ -260,7 +259,22 @@ class Transform
 		{
 			var matrix = __displayObject.__transform;
 			return new Matrix3D(new Vector<Float>([
-				matrix.a, matrix.b, 0.0, 0.0, matrix.c, matrix.d, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, matrix.tx, matrix.ty, 0.0, 1.0
+				matrix.a,
+				matrix.b,
+				0.0,
+				0.0,
+				matrix.c,
+				matrix.d,
+				0.0,
+				0.0,
+				0.0,
+				0.0,
+				1.0,
+				0.0,
+				matrix.tx,
+				matrix.ty,
+				0.0,
+				1.0
 			]));
 		}
 
@@ -338,6 +352,3 @@ class Transform
 		}
 	}
 }
-#else
-typedef Transform = flash.geom.Transform;
-#end

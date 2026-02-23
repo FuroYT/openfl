@@ -186,25 +186,24 @@ class ContextLossTest1 extends FunctionalTest
 	{
 		var context = stage.stage3Ds[0].context3D;
 
-		#if !flash
-		var vertexSource = "attribute vec4 aPosition;
+				var vertexSource = "attribute vec4 aPosition;
 			attribute vec2 aTexCoord;
 			varying vec2 vTexCoord;
-			
+
 			uniform mat4 uMatrix;
-			
+
 			void main(void) {
-				
+
 				vTexCoord = aTexCoord;
 				gl_Position = uMatrix * aPosition;
-				
+
 			}";
 
 		var fragmentSource = #if !desktop "precision mediump float;" + #end
 
 		"varying vec2 vTexCoord;
 			uniform sampler2D uImage0;
-			
+
 			void main(void)
 			{
 				gl_FragColor = texture2D (uImage0, vTexCoord);
@@ -216,20 +215,6 @@ class ContextLossTest1 extends FunctionalTest
 		programVertexAttribute = program.getAttributeIndex("aPosition");
 		programTextureAttribute = program.getAttributeIndex("aTexCoord");
 		programMatrixUniform = program.getConstantIndex("uMatrix");
-		#else
-		var vertexShaderAssembler = new AGALMiniAssembler();
-		vertexShaderAssembler.assemble(Context3DProgramType.VERTEX, "m44 op, va0, vc0\n" + "mov v0, va1");
-
-		var fragmentShaderAssembler = new AGALMiniAssembler();
-		fragmentShaderAssembler.assemble(Context3DProgramType.FRAGMENT, "tex ft1, v0, fs0 <2d,linear,nomip>\n" + "mov oc, ft1");
-
-		program = context.createProgram();
-		program.upload(vertexShaderAssembler.agalcode, fragmentShaderAssembler.agalcode);
-
-		programVertexAttribute = 0;
-		programTextureAttribute = 1;
-		programMatrixUniform = 0;
-		#end
 
 		var bitmapData = Assets.getBitmapData("assets/openfl.png");
 		bitmapTexture = context.createRectangleTexture(bitmapData.width, bitmapData.height, BGRA, false);

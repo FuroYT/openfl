@@ -37,7 +37,7 @@ class Application #if lime extends LimeApplication #end
 			Lib.application = this;
 		}
 
-		#if (!flash && !macro)
+		#if !macro
 		if (Lib.current == null) Lib.current = new MovieClip();
 		Lib.current.__loaderInfo = LoaderInfo.create(null);
 		Lib.current.__loaderInfo.content = Lib.current;

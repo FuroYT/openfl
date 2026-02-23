@@ -1,6 +1,5 @@
 package openfl.filters;
 
-#if !flash
 import openfl.display.BitmapData;
 import openfl.display.DisplayObjectRenderer;
 import openfl.display.Shader;
@@ -11,7 +10,6 @@ import openfl.geom.Rectangle;
 import lime._internal.graphics.ImageDataUtil; // TODO
 
 #end
-
 /**
 	The GlowFilter class lets you apply a glow effect to display objects. You
 	have several options for the style of the glow, including inner or outer
@@ -254,8 +252,7 @@ import lime._internal.graphics.ImageDataUtil; // TODO
 		return new GlowFilter(__color, __alpha, __blurX, __blurY, __strength, __quality, __inner, __knockout);
 	}
 
-	@:noCompletion private override function __applyFilter(bitmapData:BitmapData, sourceBitmapData:BitmapData, sourceRect:Rectangle,
-			destPoint:Point):BitmapData
+	@:noCompletion private override function __applyFilter(bitmapData:BitmapData, sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point):BitmapData
 	{
 		// TODO: Support knockout, inner
 
@@ -339,146 +336,142 @@ import lime._internal.graphics.ImageDataUtil; // TODO
 			shader.offset.value[1] = 0.0;
 			return shader;
 		}
-		#else
-		return null;
+		} @:noCompletion private function __updateSize():Void
+
+		{
+			__leftExtension = (__blurX > 0 ? Math.ceil(__blurX * 1.5) : 0);
+			__rightExtension = __leftExtension;
+			__topExtension = (__blurY > 0 ? Math.ceil(__blurY * 1.5) : 0);
+			__bottomExtension = __topExtension;
+			__calculateNumShaderPasses();
+		}
+
+		@:noCompletion private function __calculateNumShaderPasses():Void
+		{
+			__horizontalPasses = (__blurX <= 0) ? 0 : Math.round(__blurX * (__quality / 4)) + 1;
+			__verticalPasses = (__blurY <= 0) ? 0 : Math.round(__blurY * (__quality / 4)) + 1;
+			__numShaderPasses = __horizontalPasses + __verticalPasses + (__inner ? 2 : 1);
+		}
+
+		// Get & Set Methods
+		@:noCompletion private function get_alpha():Float
+		{
+			return __alpha;
+		}
+
+		@:noCompletion private function set_alpha(value:Float):Float
+		{
+			if (value != __alpha) __renderDirty = true;
+			return __alpha = value;
+		}
+
+		@:noCompletion private function get_blurX():Float
+		{
+			return __blurX;
+		}
+
+		@:noCompletion private function set_blurX(value:Float):Float
+		{
+			if (value != __blurX)
+			{
+				__blurX = value;
+				__renderDirty = true;
+				__updateSize();
+			}
+			return value;
+		}
+
+		@:noCompletion private function get_blurY():Float
+		{
+			return __blurY;
+		}
+
+		@:noCompletion private function set_blurY(value:Float):Float
+		{
+			if (value != __blurY)
+			{
+				__blurY = value;
+				__renderDirty = true;
+				__updateSize();
+			}
+			return value;
+		}
+
+		@:noCompletion private function get_color():Int
+		{
+			return __color;
+		}
+
+		@:noCompletion private function set_color(value:Int):Int
+		{
+			if (value != __color) __renderDirty = true;
+			return __color = value;
+		}
+
+		@:noCompletion private function get_inner():Bool
+		{
+			return __inner;
+		}
+
+		@:noCompletion private function set_inner(value:Bool):Bool
+		{
+			if (value != __inner)
+			{
+				__renderDirty = true;
+				__calculateNumShaderPasses();
+			}
+			return __inner = value;
+		}
+
+		@:noCompletion private function get_knockout():Bool
+		{
+			return __knockout;
+		}
+
+		@:noCompletion private function set_knockout(value:Bool):Bool
+		{
+			if (value != __knockout)
+			{
+				__renderDirty = true;
+				__calculateNumShaderPasses();
+			}
+			return __knockout = value;
+		}
+
+		@:noCompletion private function get_quality():Int
+		{
+			return __quality;
+		}
+
+		@:noCompletion private function set_quality(value:Int):Int
+		{
+			if (value != __quality)
+			{
+				__renderDirty = true;
+				__calculateNumShaderPasses();
+			}
+			return __quality = value;
+		}
+
+		@:noCompletion private function get_strength():Float
+		{
+			return __strength;
+		}
+
+		@:noCompletion private function set_strength(value:Float):Float
+		{
+			if (value != __strength) __renderDirty = true;
+			return __strength = value;
+		}
+		}
+
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
 		#end
-	}
-
-	@:noCompletion private function __updateSize():Void
-	{
-		__leftExtension = (__blurX > 0 ? Math.ceil(__blurX * 1.5) : 0);
-		__rightExtension = __leftExtension;
-		__topExtension = (__blurY > 0 ? Math.ceil(__blurY * 1.5) : 0);
-		__bottomExtension = __topExtension;
-		__calculateNumShaderPasses();
-	}
-
-	@:noCompletion private function __calculateNumShaderPasses():Void
-	{
-		__horizontalPasses = (__blurX <= 0) ? 0 : Math.round(__blurX * (__quality / 4)) + 1;
-		__verticalPasses = (__blurY <= 0) ? 0 : Math.round(__blurY * (__quality / 4)) + 1;
-		__numShaderPasses = __horizontalPasses + __verticalPasses + (__inner ? 2 : 1);
-	}
-
-	// Get & Set Methods
-	@:noCompletion private function get_alpha():Float
-	{
-		return __alpha;
-	}
-
-	@:noCompletion private function set_alpha(value:Float):Float
-	{
-		if (value != __alpha) __renderDirty = true;
-		return __alpha = value;
-	}
-
-	@:noCompletion private function get_blurX():Float
-	{
-		return __blurX;
-	}
-
-	@:noCompletion private function set_blurX(value:Float):Float
-	{
-		if (value != __blurX)
+		private class InvertAlphaShader extends BitmapFilterShader
 		{
-			__blurX = value;
-			__renderDirty = true;
-			__updateSize();
-		}
-		return value;
-	}
-
-	@:noCompletion private function get_blurY():Float
-	{
-		return __blurY;
-	}
-
-	@:noCompletion private function set_blurY(value:Float):Float
-	{
-		if (value != __blurY)
-		{
-			__blurY = value;
-			__renderDirty = true;
-			__updateSize();
-		}
-		return value;
-	}
-
-	@:noCompletion private function get_color():Int
-	{
-		return __color;
-	}
-
-	@:noCompletion private function set_color(value:Int):Int
-	{
-		if (value != __color) __renderDirty = true;
-		return __color = value;
-	}
-
-	@:noCompletion private function get_inner():Bool
-	{
-		return __inner;
-	}
-
-	@:noCompletion private function set_inner(value:Bool):Bool
-	{
-		if (value != __inner)
-		{
-			__renderDirty = true;
-			__calculateNumShaderPasses();
-		}
-		return __inner = value;
-	}
-
-	@:noCompletion private function get_knockout():Bool
-	{
-		return __knockout;
-	}
-
-	@:noCompletion private function set_knockout(value:Bool):Bool
-	{
-		if (value != __knockout)
-		{
-			__renderDirty = true;
-			__calculateNumShaderPasses();
-		}
-		return __knockout = value;
-	}
-
-	@:noCompletion private function get_quality():Int
-	{
-		return __quality;
-	}
-
-	@:noCompletion private function set_quality(value:Int):Int
-	{
-		if (value != __quality)
-		{
-			__renderDirty = true;
-			__calculateNumShaderPasses();
-		}
-		return __quality = value;
-	}
-
-	@:noCompletion private function get_strength():Float
-	{
-		return __strength;
-	}
-
-	@:noCompletion private function set_strength(value:Float):Float
-	{
-		if (value != __strength) __renderDirty = true;
-		return __strength = value;
-	}
-}
-
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class InvertAlphaShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		varying vec2 vTexCoord;
 
@@ -487,7 +480,7 @@ private class InvertAlphaShader extends BitmapFilterShader
 			gl_FragColor = vec4(texel.rgb, 1.0 - texel.a);
 		}
 	")
-	@:glVertexSource("
+			@:glVertexSource("
 		attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 		uniform mat4 openfl_Matrix;
@@ -498,19 +491,19 @@ private class InvertAlphaShader extends BitmapFilterShader
 			vTexCoord = openfl_TextureCoord;
 		}
 	")
-	public function new()
-	{
-		super();
-	}
-}
+			public function new()
+			{
+				super();
+			}
+		}
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class BlurAlphaShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
+		#end
+		private class BlurAlphaShader extends BitmapFilterShader
+		{
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		uniform vec4 uColor;
 		uniform float uStrength;
@@ -540,7 +533,7 @@ private class BlurAlphaShader extends BitmapFilterShader
 			gl_FragColor = uColor * clamp(a * uStrength, 0.0, 1.0);
 		}
 	")
-	@:glVertexSource("
+			@:glVertexSource("
 		attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 
@@ -566,24 +559,24 @@ private class BlurAlphaShader extends BitmapFilterShader
 			vBlurCoords[5] = openfl_TextureCoord + r * offset.z;
 		}
 	")
-	public function new()
-	{
-		super();
-		#if !macro
-		uRadius.value = [0, 0];
-		uColor.value = [0, 0, 0, 0];
-		uStrength.value = [1];
-		#end
-	}
-}
+			public function new()
+			{
+				super();
+				#if !macro
+				uRadius.value = [0, 0];
+				uColor.value = [0, 0, 0, 0];
+				uStrength.value = [1];
+				#end
+			}
+		}
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class CombineShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
+		#end
+		private class CombineShader extends BitmapFilterShader
+		{
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		uniform sampler2D sourceBitmap;
 		varying vec4 textureCoords;
@@ -595,7 +588,7 @@ private class CombineShader extends BitmapFilterShader
 			gl_FragColor = src + glow * (1.0 - src.a);
 		}
 	")
-	@:glVertexSource("attribute vec4 openfl_Position;
+			@:glVertexSource("attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 		uniform mat4 openfl_Matrix;
 		uniform vec2 openfl_TextureSize;
@@ -607,22 +600,22 @@ private class CombineShader extends BitmapFilterShader
 			textureCoords = vec4(openfl_TextureCoord, openfl_TextureCoord - offset / openfl_TextureSize);
 		}
 	")
-	public function new()
-	{
-		super();
-		#if !macro
-		offset.value = [0, 0];
-		#end
-	}
-}
+			public function new()
+			{
+				super();
+				#if !macro
+				offset.value = [0, 0];
+				#end
+			}
+		}
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class InnerCombineShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
+		#end
+		private class InnerCombineShader extends BitmapFilterShader
+		{
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		uniform sampler2D sourceBitmap;
 		varying vec4 textureCoords;
@@ -634,7 +627,7 @@ private class InnerCombineShader extends BitmapFilterShader
 			gl_FragColor = vec4((src.rgb * (1.0 - glow.a)) + (glow.rgb * src.a), src.a);
 		}
 	")
-	@:glVertexSource("attribute vec4 openfl_Position;
+			@:glVertexSource("attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 		uniform mat4 openfl_Matrix;
 		uniform vec2 openfl_TextureSize;
@@ -646,22 +639,22 @@ private class InnerCombineShader extends BitmapFilterShader
 			textureCoords = vec4(openfl_TextureCoord, openfl_TextureCoord - offset / openfl_TextureSize);
 		}
 	")
-	public function new()
-	{
-		super();
-		#if !macro
-		offset.value = [0, 0];
-		#end
-	}
-}
+			public function new()
+			{
+				super();
+				#if !macro
+				offset.value = [0, 0];
+				#end
+			}
+		}
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class CombineKnockoutShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
+		#end
+		private class CombineKnockoutShader extends BitmapFilterShader
+		{
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		uniform sampler2D sourceBitmap;
 		varying vec4 textureCoords;
@@ -673,7 +666,7 @@ private class CombineKnockoutShader extends BitmapFilterShader
 			gl_FragColor = glow * (1.0 - src.a);
 		}
 	")
-	@:glVertexSource("attribute vec4 openfl_Position;
+			@:glVertexSource("attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 		uniform mat4 openfl_Matrix;
 		uniform vec2 openfl_TextureSize;
@@ -685,22 +678,22 @@ private class CombineKnockoutShader extends BitmapFilterShader
 			textureCoords = vec4(openfl_TextureCoord, openfl_TextureCoord - offset / openfl_TextureSize);
 		}
 	")
-	public function new()
-	{
-		super();
-		#if !macro
-		offset.value = [0, 0];
-		#end
-	}
-}
+			public function new()
+			{
+				super();
+				#if !macro
+				offset.value = [0, 0];
+				#end
+			}
+		}
 
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class InnerCombineKnockoutShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
+		#end
+		private class InnerCombineKnockoutShader extends BitmapFilterShader
+		{
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		uniform sampler2D sourceBitmap;
 		varying vec4 textureCoords;
@@ -712,7 +705,7 @@ private class InnerCombineKnockoutShader extends BitmapFilterShader
 			gl_FragColor = glow * src.a;
 		}
 	")
-	@:glVertexSource("attribute vec4 openfl_Position;
+			@:glVertexSource("attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 		uniform mat4 openfl_Matrix;
 		uniform vec2 openfl_TextureSize;
@@ -724,14 +717,11 @@ private class InnerCombineKnockoutShader extends BitmapFilterShader
 			textureCoords = vec4(openfl_TextureCoord, openfl_TextureCoord - offset / openfl_TextureSize);
 		}
 	")
-	public function new()
-	{
-		super();
-		#if !macro
-		offset.value = [0, 0];
-		#end
-	}
-}
-#else
-typedef GlowFilter = flash.filters.GlowFilter;
-#end
+			public function new()
+			{
+				super();
+				#if !macro
+				offset.value = [0, 0];
+				#end
+			}
+		}

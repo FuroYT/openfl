@@ -1,6 +1,5 @@
 package openfl.external;
 
-#if !flash
 import openfl.utils._internal.Lib;
 
 /**
@@ -293,23 +292,16 @@ import openfl.utils._internal.Lib;
 		}
 
 		return callResponse;
-		#else
-		return null;
-		#end
-	}
+		} private static function get_objectID():String
 
-	private static function get_objectID():String
-	{
-		#if (js && html5)
-		if (Lib.application != null && Lib.application.window != null && Lib.application.window.element != null)
 		{
-			return Lib.application.window.element.id;
-		}
-		#end
+			#if (js && html5)
+			if (Lib.application != null && Lib.application.window != null && Lib.application.window.element != null)
+			{
+				return Lib.application.window.element.id;
+			}
+			#end
 
-		return null;
-	}
-}
-#else
-typedef ExternalInterface = flash.external.ExternalInterface;
-#end
+			return null;
+		}
+		}

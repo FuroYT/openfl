@@ -78,11 +78,9 @@ class TextFieldRenderTest extends Test
 		var textField3 = new TextField();
 		textField3.text = "*****";
 
-		#if flash
 		// TODO -- textWidth is still unchanged?
 		Assert.equals(textField.textWidth, textField2.textWidth);
 		Assert.notEquals(textField3.textWidth, textField2.textWidth);
-		#end
 
 		var bitmapData = new BitmapData(Math.ceil(textField.width), Math.ceil(textField.height), true);
 		var bitmapData2 = bitmapData.clone();
@@ -109,10 +107,6 @@ class TextFieldRenderTest extends Test
 		textField.text = "Hello\nWorld";
 		textField.height = 20;
 		textField.multiline = true;
-
-		#if flash
-		textField.text = textField.text;
-		#end
 
 		var textField2 = new TextField();
 		textField2.height = 20;

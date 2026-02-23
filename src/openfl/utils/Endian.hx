@@ -1,6 +1,5 @@
 package openfl.utils;
 
-#if !flash
 #if lime
 import lime.system.Endian as LimeEndian;
 #end
@@ -20,7 +19,6 @@ import lime.system.Endian as LimeEndian;
 	is sending or receiving data.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract Endian(Null<Int>)
-
 {
 	/**
 		Indicates the most significant byte of the multibyte number
@@ -104,10 +102,8 @@ import lime.system.Endian as LimeEndian;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Endian(String) from String to String
 
+abstract Endian(String) from String to String
 {
 	public var BIG_ENDIAN = "bigEndian";
 	public var LITTLE_ENDIAN = "littleEndian";
@@ -134,7 +130,4 @@ import lime.system.Endian as LimeEndian;
 	}
 	#end
 }
-#end
-#else
-typedef Endian = flash.utils.Endian;
 #end

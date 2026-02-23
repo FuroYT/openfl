@@ -1,6 +1,5 @@
 package openfl.events;
 
-#if !flash
 // import openfl.utils.ObjectPool;
 import openfl.display.InteractiveObject;
 import openfl.geom.Point;
@@ -484,8 +483,22 @@ class TouchEvent extends Event
 	public override function toString():String
 	{
 		return __formatToString("TouchEvent", [
-			"type", "bubbles", "cancelable", "touchPointID", "isPrimaryTouchPoint", "localX", "localY", "sizeX", "sizeY", "pressure", "relatedObject",
-			"ctrlKey", "altKey", "shiftKey", "commandKey", "controlKey"
+			"type",
+			"bubbles",
+			"cancelable",
+			"touchPointID",
+			"isPrimaryTouchPoint",
+			"localX",
+			"localY",
+			"sizeX",
+			"sizeY",
+			"pressure",
+			"relatedObject",
+			"ctrlKey",
+			"altKey",
+			"shiftKey",
+			"commandKey",
+			"controlKey"
 		]);
 	}
 
@@ -528,6 +541,3 @@ class TouchEvent extends Event
 		stageY = Math.NaN;
 	}
 }
-#else
-typedef TouchEvent = flash.events.TouchEvent;
-#end

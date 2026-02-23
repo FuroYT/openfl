@@ -1,7 +1,5 @@
 package openfl.geom;
 
-#if !flash
-
 #if !openfljs
 /**
 	The Orientation3D class is an enumeration of constant
@@ -11,7 +9,6 @@ package openfl.geom;
 	enumerated types to identify the rotational components of the Matrix.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract Orientation3D(Null<Int>)
-
 {
 	/**
 		The axis angle orientation uses a combination of an axis and an angle to determine
@@ -81,9 +78,8 @@ package openfl.geom;
 		}
 	}
 }
-#else
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Orientation3D(String) from String to String
 
+abstract Orientation3D(String) from String to String
 {
 	/**
 		The axis angle orientation uses a combination of an
@@ -133,7 +129,4 @@ package openfl.geom;
 	**/
 	public var QUATERNION = "quaternion";
 }
-#end
-#else
-typedef Orientation3D = flash.geom.Orientation3D;
 #end

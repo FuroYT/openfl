@@ -1,6 +1,5 @@
 package openfl.utils;
 
-#if !flash
 import haxe.Timer as HaxeTimer;
 import openfl.errors.Error;
 import openfl.events.EventDispatcher;
@@ -150,89 +149,80 @@ class Timer extends EventDispatcher
 
 			#if (js && html5)
 			__timerID = Browser.window.setInterval(timer_onTimer, Std.int(__delay));
-			#else
-			__timer = new HaxeTimer(Std.int(__delay));
-			__timer.run = timer_onTimer;
-			#end
-		}
-	}
+			}} /**
+				Stops the timer. When `start()` is called after
+				`stop()`, the timer instance runs for the _remaining_
+				number of repetitions, as set by the `repeatCount` property.
 
-	/**
-		Stops the timer. When `start()` is called after
-		`stop()`, the timer instance runs for the _remaining_
-		number of repetitions, as set by the `repeatCount` property.
+			**/
 
-	**/
-	public function stop():Void
-	{
-		running = false;
+			public function stop():Void
+			{
+				running = false;
 
-		#if (js && html5)
-		if (__timerID != null)
-		{
-			Browser.window.clearInterval(__timerID);
-			__timerID = null;
-		}
-		#else
-		if (__timer != null)
-		{
-			__timer.stop();
-			__timer = null;
-		}
-		#end
-	}
+				#if (js && html5)
+				if (__timerID != null)
+				{
+					Browser.window.clearInterval(__timerID);
+					__timerID = null;
+				}
+				#else
+				if (__timer != null)
+				{
+					__timer.stop();
+					__timer = null;
+				}
+				#end
+			}
 
-	// Getters & Setters
-	@:noCompletion private function get_delay():Float
-	{
-		return __delay;
-	}
+			// Getters & Setters
+			@:noCompletion private function get_delay():Float
+			{
+				return __delay;
+			}
 
-	@:noCompletion private function set_delay(value:Float):Float
-	{
-		__delay = value;
+			@:noCompletion private function set_delay(value:Float):Float
+			{
+				__delay = value;
 
-		if (running)
-		{
-			stop();
-			start();
-		}
+				if (running)
+				{
+					stop();
+					start();
+				}
 
-		return __delay;
-	}
+				return __delay;
+			}
 
-	@:noCompletion private function get_repeatCount():Int
-	{
-		return __repeatCount;
-	}
+			@:noCompletion private function get_repeatCount():Int
+			{
+				return __repeatCount;
+			}
 
-	@:noCompletion private function set_repeatCount(v:Int):Int
-	{
-		if (running && v != 0 && v <= currentCount)
-		{
-			stop();
-		}
+			@:noCompletion private function set_repeatCount(v:Int):Int
+			{
+				if (running && v != 0 && v <= currentCount)
+				{
+					stop();
+				}
 
-		return __repeatCount = v;
-	}
+				return __repeatCount = v;
+			}
 
-	// Event Handlers
-	@:noCompletion private function timer_onTimer():Void
-	{
-		currentCount++;
+			// Event Handlers
+			@:noCompletion private function timer_onTimer():Void
+			{
+				currentCount++;
 
-		if (__repeatCount > 0 && currentCount >= __repeatCount)
-		{
-			stop();
-			dispatchEvent(new TimerEvent(TimerEvent.TIMER));
-			dispatchEvent(new TimerEvent(TimerEvent.TIMER_COMPLETE));
-		}
-		else
-		{
-			dispatchEvent(new TimerEvent(TimerEvent.TIMER));
-		}
-	}
-}
-#else
-typedef Timer = flash.utils.Timer;
-#end
+				if (__repeatCount > 0 && currentCount >= __repeatCount)
+				{
+					stop();
+					dispatchEvent(new TimerEvent(TimerEvent.TIMER));
+					dispatchEvent(new TimerEvent(TimerEvent.TIMER_COMPLETE));
+				}
+				else
+				{
+					dispatchEvent(new TimerEvent(TimerEvent.TIMER));
+				}
+			}
+			}

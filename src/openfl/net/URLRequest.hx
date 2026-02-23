@@ -1,6 +1,5 @@
 package openfl.net;
 
-#if !flash
 import haxe.macro.Compiler;
 
 /**
@@ -363,19 +362,10 @@ import haxe.macro.Compiler;
 		{
 			#if lime_default_timeout
 			idleTimeout = Std.parseInt(Compiler.getDefine("lime-default-timeout"));
-			#else
-			idleTimeout = 30000;
-			#end
-		}
+			} manageCookies = URLRequestDefaults.manageCookies;
 
-		manageCookies = URLRequestDefaults.manageCookies;
-		method = URLRequestMethod.GET;
-		requestHeaders = [];
-		userAgent = URLRequestDefaults.userAgent;
-	}
-
-	// @:noCompletion @:dox(hide) public function useRedirectedURL (sourceRequest:URLRequest, wholeURL:Bool = false, pattern:Dynamic = null, replace:String = null):Void;
-}
-#else
-typedef URLRequest = flash.net.URLRequest;
-#end
+			method = URLRequestMethod.GET;
+			requestHeaders = [];
+			userAgent = URLRequestDefaults.userAgent;
+			} // @:noCompletion @:dox(hide) public function useRedirectedURL (sourceRequest:URLRequest, wholeURL:Bool = false, pattern:Dynamic = null, replace:String = null):Void;
+			}

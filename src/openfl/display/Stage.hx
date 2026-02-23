@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import haxe.CallStack;
 import haxe.ds.ArraySort;
 import openfl.utils._internal.Log;
@@ -51,9 +50,6 @@ import openfl.display._internal.stats.Context3DStats;
 #if (js && html5)
 import js.html.Element;
 import js.Browser;
-#elseif js
-typedef Element = Dynamic;
-#end
 
 /**
 	The Stage class represents the main drawing area.
@@ -267,7 +263,6 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var colorCorrection:openfl.display.ColorCorrection;
 	#end
-
 	#if false
 	/**
 		Specifies whether the Flash runtime is running on an operating system
@@ -3605,6 +3600,3 @@ class Stage extends DisplayObjectContainer #if lime implements IModule #end
 		return 0;
 	}
 }
-#else
-typedef Stage = flash.display.Stage;
-#end

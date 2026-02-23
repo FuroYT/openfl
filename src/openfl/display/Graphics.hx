@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.CairoGraphics;
 import openfl.display._internal.CanvasGraphics;
 import openfl.display._internal.Context3DBuffer;
@@ -86,8 +85,7 @@ import js.html.CanvasRenderingContext2D;
 	#if (js && html5)
 	@:noCompletion private var __canvas:CanvasElement;
 	@:noCompletion private var __context:#if lime CanvasRenderingContext2D #else Dynamic #end;
-	#else
-	@SuppressWarnings("checkstyle:Dynamic") @:noCompletion private var __cairo:#if lime Cairo #else Dynamic #end;
+		;
 	#end
 	@:noCompletion private var __bitmap:BitmapData;
 	@:noCompletion private var __bitmapScale:Float;
@@ -1983,6 +1981,3 @@ import js.html.CanvasRenderingContext2D;
 		return __dirty = value;
 	}
 }
-#else
-typedef Graphics = flash.display.Graphics;
-#end

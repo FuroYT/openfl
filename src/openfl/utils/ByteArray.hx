@@ -169,7 +169,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	**/
 	public inline function new(length:Int = 0):Void
 	{
-		#if (display || flash)
+		#if display
 		this = new ByteArrayData();
 		this.length = length;
 		#else
@@ -244,11 +244,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	**/
 	public inline function compress(algorithm:CompressionAlgorithm = null):Void
 	{
-		#if flash
-		return (algorithm == null) ? this.compress() : this.compress(algorithm);
-		#else
 		return this.compress(algorithm);
-		#end
 	}
 
 	/**
@@ -293,8 +289,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 		return null;
 		#elseif js
 		return ByteArrayData.fromBytes(Bytes.ofData(buffer));
-		#elseif flash
-		return (buffer : Bytes).getData();
 		#else
 		return ByteArrayData.fromBytes((buffer : Bytes));
 		#end
@@ -320,11 +314,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 		}
 		else
 		{
-			#if flash
-			return bytes.getData();
-			#else
 			return ByteArrayData.fromBytes(bytes);
-			#end
 		}
 		#end
 	}
@@ -341,8 +331,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 
 		#if display
 		return null;
-		#elseif flash
-		return bytesData;
 		#else
 		return ByteArrayData.fromBytes(Bytes.ofData(bytesData));
 		#end
@@ -387,8 +375,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	{
 		#if display
 		return 0;
-		#elseif flash
-		return this[index];
 		#else
 		return this.get(index);
 		#end
@@ -670,8 +656,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	@:arrayAccess @:noCompletion private inline function set(index:Int, value:Int):Int
 	{
 		#if display
-		#elseif flash
-		this[index] = value;
 		#else
 		this.__resize(index + 1);
 		this.set(index, value);
@@ -692,8 +676,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 		return null;
 		#elseif js
 		return (byteArray : ByteArrayData).getData();
-		#elseif flash
-		return Bytes.ofData(byteArray);
 		#else
 		return (byteArray : ByteArrayData);
 		#end
@@ -704,7 +686,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	@:to @:noCompletion private static function toBytePointer(byteArray:ByteArray):BytePointer
 	{
 		#if !display
-		__bytePointer.set(#if flash byteArray #else (byteArray : ByteArrayData) #end, byteArray.position);
+		__bytePointer.set((byteArray : ByteArrayData), byteArray.position);
 		#end
 		return __bytePointer;
 	}
@@ -725,8 +707,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	{
 		#if display
 		return null;
-		#elseif flash
-		return Bytes.ofData(byteArray);
 		#else
 		return (byteArray : ByteArrayData);
 		#end
@@ -737,8 +717,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	{
 		#if display
 		return null;
-		#elseif flash
-		return byteArray;
 		#else
 		return (byteArray : ByteArrayData).getData();
 		#end
@@ -750,8 +728,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	{
 		#if display
 		return null;
-		#elseif flash
-		return Bytes.ofData(byteArray);
 		#else
 		return (byteArray : ByteArrayData);
 		#end
@@ -802,11 +778,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	**/
 	public inline function uncompress(algorithm:CompressionAlgorithm = null):Void
 	{
-		#if flash
-		return (algorithm == null) ? this.uncompress() : this.uncompress(algorithm);
-		#else
 		return this.uncompress(algorithm);
-		#end
 	}
 
 	/**
@@ -1017,8 +989,6 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	@:noCompletion private function set_length(value:Int):UInt
 	{
 		#if display
-		#elseif flash
-		this.length = value;
 		#elseif lime_bytes_length_getter
 		this.length = value;
 		#else
@@ -1055,7 +1025,7 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	}
 }
 
-#if (!display && !flash)
+#if !display
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -1854,65 +1824,17 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	#end
 }
 #else
-#if flash
-@:native("flash.utils.ByteArray")
-#end
 @SuppressWarnings("checkstyle:FieldDocComment")
 @:noCompletion @:dox(hide) extern class ByteArrayData implements IDataOutput implements IDataInput implements ArrayAccess<Int>
 {
-	#if flash
-	public static var defaultEndian(get, set):Endian;
-	private static inline function get_defaultEndian():Endian
-	{
-		return BIG_ENDIAN;
-	}
-	private static inline function set_defaultEndian(value:Endian):Endian
-	{
-		return value;
-	}
-	#else
 	public static var defaultEndian:Endian;
-	#end
 
-	#if flash
-	#if (haxe_ver < 4.3)
-	public static var defaultObjectEncoding:ObjectEncoding;
-	public var bytesAvailable(default, never):UInt;
-	public var endian:Endian;
-	public var length:UInt;
-	public var objectEncoding:ObjectEncoding;
-	public var position:UInt;
-	@:require(flash11_4) public var shareable:Bool;
-	#else
-	@:flash.property static var defaultObjectEncoding(get, set):ObjectEncoding;
-	@:flash.property var bytesAvailable(get, never):UInt;
-	@:flash.property var endian(get, set):Endian;
-	@:flash.property var length(get, set):UInt;
-	@:flash.property var objectEncoding(get, set):ObjectEncoding;
-	@:flash.property var position(get, set):UInt;
-	@:flash.property @:require(flash11_4) var shareable(get, set):Bool;
-	private static function get_defaultObjectEncoding():ObjectEncoding;
-	private function get_bytesAvailable():UInt;
-	private function get_endian():Endian;
-	private function get_length():UInt;
-	private function get_objectEncoding():ObjectEncoding;
-	private function get_position():UInt;
-	private function get_shareable():Bool;
-	private static function set_defaultObjectEncoding(value:ObjectEncoding):ObjectEncoding;
-	private function set_endian(value:Endian):Endian;
-	private function set_length(value:UInt):UInt;
-	private function set_objectEncoding(value:ObjectEncoding):ObjectEncoding;
-	private function set_position(value:UInt):UInt;
-	private function set_shareable(value:Bool):Bool;
-	#end
-	#else
 	static var defaultObjectEncoding(get, set):ObjectEncoding;
 	var bytesAvailable(get, never):UInt;
 	var endian(get, set):Endian;
 	var length(get, set):UInt;
 	var objectEncoding:ObjectEncoding;
 	var position(get, set):UInt;
-	@:require(flash11_4) var shareable(get, set):Bool;
 	private static function get_defaultObjectEncoding():ObjectEncoding;
 	private function get_bytesAvailable():UInt;
 	private function get_endian():Endian;
@@ -1926,14 +1848,8 @@ abstract ByteArray(ByteArrayData) from ByteArrayData to ByteArrayData
 	private function set_objectEncoding(value:ObjectEncoding):ObjectEncoding;
 	private function set_position(value:UInt):UInt;
 	private function set_shareable(value:Bool):Bool;
-	#end
 
 	public function new();
-
-	#if flash
-	@:noCompletion @:dox(hide) @:require(flash11_4) public function atomicCompareAndSwapIntAt(byteIndex:Int, expectedValue:Int, newValue:Int):Int;
-	@:noCompletion @:dox(hide) @:require(flash11_4) public function atomicCompareAndSwapLength(expectedLength:Int, newLength:Int):Int;
-	#end
 
 	/**
 		Clears the contents of the byte array and resets the `length`

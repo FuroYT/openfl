@@ -203,17 +203,8 @@ class Vector3DTest extends Test
 		Assert.equals(false, a.nearEquals(b, 0.1, true));
 		Assert.equals(false, a.nearEquals(c, 0.02, true));
 
-		#if flash
-		// TODO: alpha is considered abs(max(2.3, 2.2) - 0.0) < 2.4 with allFour=true
-		Assert.equals(true, a.nearEquals(b, 2.4, true));
-		Assert.equals(true, a.nearEquals(c, 2.4, true));
-
-		Assert.equals(true, a.nearEquals(b, 0.11, false));
-		Assert.equals(true, a.nearEquals(c, 0.03, false));
-		#else
 		Assert.equals(true, a.nearEquals(b, 0.11, true));
 		Assert.equals(true, a.nearEquals(c, 0.03, true));
-		#end
 	}
 
 	public function test_negate()

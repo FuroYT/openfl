@@ -56,20 +56,12 @@ import js.Browser;
 
 	public static function as<T>(v:Dynamic, c:Class<T>):Null<T>
 	{
-		#if flash
-		return flash.Lib.as(v, c);
-		#else
 		return #if (haxe_ver >= 4.2) Std.isOfType #else Std.is #end (v, c) ? v : null;
-		#end
 	}
 
 	public static function attach(name:String):MovieClip
 	{
-		#if flash
-		return cast flash.Lib.attach(name);
-		#else
 		return new MovieClip();
-		#end
 	}
 
 	/**
@@ -104,20 +96,6 @@ import js.Browser;
 		}
 	}
 
-	#if flash
-	public static function eval(path:String):Dynamic
-	{
-		return flash.Lib.eval(path);
-	}
-	#end
-
-	#if flash
-	public static function fscommand(cmd:String, ?param:String)
-	{
-		return flash.Lib.fscommand(cmd, param);
-	}
-	#end
-
 	/**
 		Returns a reference to the class object of the class specified by the `name`
 		parameter.
@@ -130,14 +108,6 @@ import js.Browser;
 	public static function getDefinitionByName(name:String):Class<Dynamic>
 	{
 		if (name == null) return null;
-		#if flash
-		if (StringTools.startsWith(name, "openfl."))
-		{
-			var value = Type.resolveClass(name);
-			if (value == null) value = Type.resolveClass(StringTools.replace(name, "openfl.", "flash."));
-			return value;
-		}
-		#end
 		return Type.resolveClass(name);
 	}
 
@@ -222,11 +192,7 @@ import js.Browser;
 	public static function getTimer():Int
 	{
 		#if lime
-		#if flash
-		return flash.Lib.getTimer();
-		#else
 		return System.getTimer();
-		#end
 		#else
 		return 0;
 		#end
@@ -393,9 +359,7 @@ import js.Browser;
 			window = "_blank";
 		}
 
-		#if flash
-		return flash.Lib.getURL(request, window);
-		#elseif lime
+		#if lime
 		var uri = request.url;
 
 		if (Type.typeof(request.data) == Type.ValueType.TObject)
@@ -444,13 +408,6 @@ import js.Browser;
 		}, false);
 		#end
 	}
-
-	#if flash
-	public static function redirectTraces()
-	{
-		return flash.Lib.redirectTraces();
-	}
-	#end
 
 	/**
 		Sends a URL request to a server, but ignores any response.
@@ -575,9 +532,6 @@ import js.Browser;
 	**/
 	public static function isXMLName(name:String):Bool
 	{
-		#if flash
-		return untyped __global__["isXMLName"](name);
-		#else
 		if (name == null)
 		{
 			return false;
@@ -598,7 +552,6 @@ import js.Browser;
 			return false;
 		}
 		return true;
-		#end
 	}
 
 	/**
@@ -609,15 +562,11 @@ import js.Browser;
 	**/
 	public static function getClassByAlias(aliasName:String):Class<Dynamic>
 	{
-		#if flash
-		return untyped __global__["flash.net.getClassByAlias"](aliasName);
-		#else
 		if (!__registeredClassAliases.exists(aliasName))
 		{
 			throw new Error('Class $aliasName could not be found.');
 		}
 		return __registeredClassAliases.get(aliasName);
-		#end
 	}
 
 	/**
@@ -639,9 +588,6 @@ import js.Browser;
 	**/
 	public static function registerClassAlias(aliasName:String, classObject:Class<Dynamic>):Void
 	{
-		#if flash
-		untyped __global__["flash.net.registerClassAlias"](aliasName, classObject);
-		#else
 		if (classObject == null)
 		{
 			throw new TypeError("Parameter classObject must be non-null");
@@ -651,7 +597,6 @@ import js.Browser;
 			throw new TypeError("Parameter aliasName must be non-null");
 		}
 		__registeredClassAliases.set(aliasName, classObject);
-		#end
 	}
 
 	// Get & Set Methods
@@ -662,12 +607,8 @@ import js.Browser;
 
 	@:noCompletion private static function get_current():MovieClip
 	{
-		#if flash
-		return cast flash.Lib.current;
-		#else
 		if (InternalLib.current == null) InternalLib.current = new MovieClip();
 		return InternalLib.current;
-		#end
 	}
 
 	// @:noCompletion private static function set_current (current:MovieClip):MovieClip {

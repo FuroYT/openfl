@@ -397,7 +397,7 @@ class VectorTest extends Test
 		Assert.equals(100, vector[0]);
 	}
 
-	#if (!html5 && !flash)
+	#if !html5
 	@Ignored
 	#end
 	public function test_intVectorStringify()
@@ -413,7 +413,7 @@ class VectorTest extends Test
 		Assert.equals(expected, stringyfied);
 	}
 
-	#if (!html5 && !flash)
+	#if !html5
 	@Ignored
 	#end
 	public function test_boolVectorStringify()
@@ -429,7 +429,7 @@ class VectorTest extends Test
 		Assert.equals(expected, stringyfied);
 	}
 
-	#if (!html5 && !flash)
+	#if !html5
 	@Ignored
 	#end
 	public function test_floatVectorStringify()
@@ -445,7 +445,7 @@ class VectorTest extends Test
 		Assert.equals(expected, stringyfied);
 	}
 
-	#if (!html5 && !flash)
+	#if !html5
 	@Ignored
 	#end
 	public function test_objectVectorStringify()

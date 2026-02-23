@@ -1,6 +1,5 @@
 package openfl.display3D;
 
-#if !flash
 #if !openfljs
 #if cs
 import openfl.utils._internal.NullUtils;
@@ -10,7 +9,6 @@ import openfl.utils._internal.NullUtils;
 	Defines the values to use for sampler filter mode.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DTextureFilter(Null<Int>)
-
 {
 	/**
 		Use anisotropic filter with radio 16 when upsampling textures
@@ -85,10 +83,8 @@ import openfl.utils._internal.NullUtils;
 	}
 	#end
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DTextureFilter(String) from String to String
 
+abstract Context3DTextureFilter(String) from String to String
 {
 	public var ANISOTROPIC16X = "anisotropic16x";
 	public var ANISOTROPIC2X = "anisotropic2x";
@@ -97,7 +93,4 @@ import openfl.utils._internal.NullUtils;
 	public var LINEAR = "linear";
 	public var NEAREST = "nearest";
 }
-#end
-#else
-typedef Context3DTextureFilter = flash.display3D.Context3DTextureFilter;
 #end

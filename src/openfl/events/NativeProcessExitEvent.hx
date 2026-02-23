@@ -1,6 +1,6 @@
 package openfl.events;
 
-#if (haxe4 && sys && !flash)
+#if (haxe4 && sys)
 /**
 	This event is dispatched by the NativeProcess object when the process exits.
 	It is possible that this event will never be dispatched. For example, if the
@@ -80,8 +80,4 @@ class NativeProcessExitEvent extends Event
 		exitCode = Math.NaN;
 	}
 }
-#else
-#if air
-typedef NativeProcessExitEvent = flash.events.NativeProcessExitEvent;
-#end
 #end

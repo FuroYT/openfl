@@ -1,6 +1,6 @@
 package openfl.filesystem;
 
-#if (!flash && sys)
+#if sys
 import haxe.io.Path;
 import lime.system.BackgroundWorker;
 import lime.system.System;
@@ -1966,8 +1966,4 @@ class File extends FileReference
 		return lastIndex != -1 ? new File(__path.substring(0, (lastIndex - path.length) + path.length)) : null;
 	}
 }
-#else
-#if air
-typedef File = flash.filesystem.File;
-#end
 #end

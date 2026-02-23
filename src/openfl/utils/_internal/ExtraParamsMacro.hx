@@ -11,17 +11,6 @@ class ExtraParamsMacro
 	{
 		if (!Context.defined("tools"))
 		{
-			if (Context.defined("display"))
-			{
-				includeExterns();
-			}
-
-			if (!Context.defined("flash"))
-			{
-				Compiler.allowPackage("flash");
-				Compiler.define("swf-version", "22.0");
-			}
-
 			#if debug
 			if (!Context.defined("openfl-enable-handle-error"))
 			{
@@ -29,20 +18,6 @@ class ExtraParamsMacro
 			}
 			#end
 		}
-	}
-
-	public static function includeExterns():Void
-	{
-		var childPath = Context.resolvePath("openfl/external");
-
-		var parts = StringTools.replace(childPath, "\\", "/").split("/");
-		parts.pop();
-		parts.pop();
-		parts.pop();
-
-		var externsPath = parts.join("/") + "/lib/flash-externs/src";
-
-		Compiler.addClassPath(externsPath);
 	}
 }
 #end

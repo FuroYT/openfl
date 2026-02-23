@@ -30,13 +30,6 @@ class Build extends Script
 			case "cpp":
 				System.removeDirectory("bin/cpp");
 				hxml.cpp = "bin/cpp";
-			case "swf":
-				System.removeDirectory("bin/swf");
-				hxml.cp("../../lib/flash-externs/src");
-				hxml.swf = "bin/swf/Test.swf";
-				hxml.swfVersion = "30";
-				hxml.define("air");
-				hxml.define("fdb");
 			default:
 				trace('Tests not supported: ${target}');
 				Sys.exit(1);

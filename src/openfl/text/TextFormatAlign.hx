@@ -1,14 +1,11 @@
 package openfl.text;
 
-#if !flash
-
 #if !openfljs
 /**
 	The TextFormatAlign class provides values for text alignment in the
 	TextFormat class.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract TextFormatAlign(Null<Int>)
-
 {
 	/**
 		Constant; centers the text in the text field. Use the syntax
@@ -78,10 +75,8 @@ package openfl.text;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract TextFormatAlign(String) from String to String
 
+abstract TextFormatAlign(String) from String to String
 {
 	public var CENTER = "center";
 	public var END = "end";
@@ -90,7 +85,4 @@ package openfl.text;
 	public var RIGHT = "right";
 	public var START = "start";
 }
-#end
-#else
-typedef TextFormatAlign = flash.text.TextFormatAlign;
 #end

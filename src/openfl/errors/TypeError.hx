@@ -1,6 +1,5 @@
 package openfl.errors;
 
-#if !flash
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -14,6 +13,3 @@ class TypeError extends Error
 		name = "TypeError";
 	}
 }
-#else
-typedef TypeError = flash.errors.TypeError;
-#end

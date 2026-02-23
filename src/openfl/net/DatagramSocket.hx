@@ -1,6 +1,6 @@
 package openfl.net;
 
-#if (!flash && !html5)
+#if !html5
 import haxe.io.Bytes;
 import haxe.io.Error;
 import openfl.errors.ArgumentError;
@@ -408,8 +408,4 @@ class DatagramSocket extends EventDispatcher
 	}
 	#end
 }
-#else
-#if air
-typedef DatagramSocket = flash.net.DatagramSocket;
-#end
 #end

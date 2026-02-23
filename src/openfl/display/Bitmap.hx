@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.geom.Matrix;
 import openfl.geom.Rectangle;
 #if (js && html5)
@@ -241,6 +240,3 @@ class Bitmap extends DisplayObject
 		return value;
 	}
 }
-#else
-typedef Bitmap = flash.display.Bitmap;
-#end

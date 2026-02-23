@@ -1,9 +1,7 @@
 package openfl.globalization;
 
-#if !flash
 #if !openfljs
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract LastOperationStatus(Null<Int>)
-
 {
 	public var BUFFER_OVERFLOW_ERROR = 0;
 	public var ERROR_CODE_UNKNOWN = 1;
@@ -83,10 +81,8 @@ package openfl.globalization;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract LastOperationStatus(String) from String to String
 
+abstract LastOperationStatus(String) from String to String
 {
 	public var BUFFER_OVERFLOW_ERROR = "bufferOverflowError";
 	public var ERROR_CODE_UNKNOWN = "errorCodeUnknown";
@@ -131,7 +127,4 @@ package openfl.globalization;
 		}
 	}
 }
-#end
-#else
-typedef LastOperationStatus = flash.globalization.LastOperationStatus;
 #end

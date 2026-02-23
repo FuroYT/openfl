@@ -1,6 +1,6 @@
 package openfl.net;
 
-#if (!flash && !html5)
+#if !html5
 import haxe.io.Error;
 import openfl.Lib;
 import openfl.errors.ArgumentError;
@@ -299,8 +299,4 @@ class ServerSocket extends EventDispatcher
 		#end
 	}
 }
-#else
-#if air
-typedef ServerSocket = flash.net.ServerSocket;
-#end
 #end

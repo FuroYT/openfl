@@ -1,8 +1,6 @@
 package openfl.events;
 
-#if !flash
 // import openfl.utils.ObjectPool;
-
 /**
 	An object dispatches a DataEvent object when raw data has completed
 	loading. There are two types of data event:
@@ -100,6 +98,3 @@ class DataEvent extends TextEvent
 		data = "";
 	}
 }
-#else
-typedef DataEvent = flash.events.DataEvent;
-#end

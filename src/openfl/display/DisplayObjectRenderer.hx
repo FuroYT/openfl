@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.Context3DGraphics;
 import openfl.display.Bitmap;
 import openfl.display.DisplayObject;
@@ -274,591 +273,590 @@ class DisplayObjectRenderer extends EventDispatcher
 					{
 						#if (js && html5)
 						renderType = CANVAS;
-						#else
-						renderType = CAIRO;
+						}}
 						#end
+
+						if (softwareDirty && (renderType == CANVAS || renderType == CAIRO)) needRender = true;
+						if (hardwareDirty && renderType == OPENGL) needRender = true;
 					}
-				}
-				#end
 
-				if (softwareDirty && (renderType == CANVAS || renderType == CAIRO)) needRender = true;
-				if (hardwareDirty && renderType == OPENGL) needRender = true;
-			}
+					var updateTransform = (needRender
+						|| !displayObject.__cacheBitmap.__worldTransform.equals(displayObject.__worldTransform));
+					var hasFilters = #if !openfl_disable_filters displayObject.__filters != null #else false #end;
 
-			var updateTransform = (needRender || !displayObject.__cacheBitmap.__worldTransform.equals(displayObject.__worldTransform));
-			var hasFilters = #if !openfl_disable_filters displayObject.__filters != null #else false #end;
+					#if !openfl_enable_cacheasbitmap
+					if (renderer.__type == DOM && !hasFilters)
+					{
+						return false;
+					}
+					#end
 
-			#if !openfl_enable_cacheasbitmap
-			if (renderer.__type == DOM && !hasFilters)
-			{
-				return false;
-			}
-			#end
+					if (hasFilters && !needRender)
+					{
+						for (filter in displayObject.__filters)
+						{
+							if (filter.__renderDirty)
+							{
+								needRender = true;
+								break;
+							}
+						}
+					}
 
-			if (hasFilters && !needRender)
-			{
-				for (filter in displayObject.__filters)
-				{
-					if (filter.__renderDirty)
+					if (displayObject.__cacheBitmapMatrix == null)
+					{
+						displayObject.__cacheBitmapMatrix = new Matrix();
+					}
+
+					var bitmapMatrix = (displayObject.__cacheAsBitmapMatrix != null ? displayObject.__cacheAsBitmapMatrix : displayObject.__renderTransform);
+
+					if (!needRender
+						&& (bitmapMatrix.a != displayObject.__cacheBitmapMatrix.a
+							|| bitmapMatrix.b != displayObject.__cacheBitmapMatrix.b
+							|| bitmapMatrix.c != displayObject.__cacheBitmapMatrix.c
+							|| bitmapMatrix.d != displayObject.__cacheBitmapMatrix.d))
 					{
 						needRender = true;
-						break;
 					}
-				}
-			}
 
-			if (displayObject.__cacheBitmapMatrix == null)
-			{
-				displayObject.__cacheBitmapMatrix = new Matrix();
-			}
-
-			var bitmapMatrix = (displayObject.__cacheAsBitmapMatrix != null ? displayObject.__cacheAsBitmapMatrix : displayObject.__renderTransform);
-
-			if (!needRender
-				&& (bitmapMatrix.a != displayObject.__cacheBitmapMatrix.a
-					|| bitmapMatrix.b != displayObject.__cacheBitmapMatrix.b
-					|| bitmapMatrix.c != displayObject.__cacheBitmapMatrix.c
-					|| bitmapMatrix.d != displayObject.__cacheBitmapMatrix.d))
-			{
-				needRender = true;
-			}
-
-			if (!needRender
-				&& renderer.__type != OPENGL
-				&& displayObject.__cacheBitmapData != null
-				&& displayObject.__cacheBitmapData.image != null
-				&& displayObject.__cacheBitmapData.image.version < displayObject.__cacheBitmapData.__textureVersion)
-			{
-				needRender = true;
-			}
-
-			// Ensure that cached bitmap is updated after changes to scrollRect
-			if (!needRender)
-			{
-				var current = displayObject;
-				while (current != null)
-				{
-					if (current.scrollRect != null)
+					if (!needRender
+						&& renderer.__type != OPENGL
+						&& displayObject.__cacheBitmapData != null
+						&& displayObject.__cacheBitmapData.image != null
+						&& displayObject.__cacheBitmapData.image.version < displayObject.__cacheBitmapData.__textureVersion)
 					{
-						// TODO: do we need to update transform if scroll rects haven't changed?
+						needRender = true;
+					}
+
+					// Ensure that cached bitmap is updated after changes to scrollRect
+					if (!needRender)
+					{
+						var current = displayObject;
+						while (current != null)
+						{
+							if (current.scrollRect != null)
+							{
+								// TODO: do we need to update transform if scroll rects haven't changed?
+								updateTransform = true;
+								break;
+							}
+							current = current.parent;
+						}
+					}
+
+					displayObject.__cacheBitmapMatrix.copyFrom(bitmapMatrix);
+					displayObject.__cacheBitmapMatrix.tx = 0;
+					displayObject.__cacheBitmapMatrix.ty = 0;
+
+					// TODO: Handle dimensions better if object has a scrollRect?
+
+					var bitmapWidth = 0, bitmapHeight = 0;
+					var filterWidth = 0, filterHeight = 0;
+					var offsetX = 0., offsetY = 0.;
+
+					#if (openfl_disable_hdpi || openfl_disable_hdpi_cacheasbitmap)
+					var pixelRatio = 1;
+					#else
+					var pixelRatio = __pixelRatio;
+					#end
+
+					if (updateTransform || needRender)
+					{
+						rect = Rectangle.__pool.get();
+
+						displayObject.__getFilterBounds(rect, displayObject.__cacheBitmapMatrix);
+
+						filterWidth = rect.width > 0 ? Math.ceil((rect.width + 1) * pixelRatio) : 0;
+						filterHeight = rect.height > 0 ? Math.ceil((rect.height + 1) * pixelRatio) : 0;
+
+						offsetX = rect.x > 0 ? Math.ceil(rect.x) : Math.floor(rect.x);
+						offsetY = rect.y > 0 ? Math.ceil(rect.y) : Math.floor(rect.y);
+
+						if (displayObject.__cacheBitmapData != null)
+						{
+							if (filterWidth > displayObject.__cacheBitmapData.width
+								|| filterHeight > displayObject.__cacheBitmapData.height)
+							{
+								bitmapWidth = Math.ceil(Math.max(filterWidth * 1.25, displayObject.__cacheBitmapData.width));
+								bitmapHeight = Math.ceil(Math.max(filterHeight * 1.25, displayObject.__cacheBitmapData.height));
+								needRender = true;
+							}
+							else
+							{
+								bitmapWidth = displayObject.__cacheBitmapData.width;
+								bitmapHeight = displayObject.__cacheBitmapData.height;
+							}
+						}
+						else
+						{
+							bitmapWidth = filterWidth;
+							bitmapHeight = filterHeight;
+						}
+					}
+
+					if (needRender)
+					{
 						updateTransform = true;
-						break;
-					}
-					current = current.parent;
-				}
-			}
+						displayObject.__cacheBitmapBackground = displayObject.opaqueBackground;
 
-			displayObject.__cacheBitmapMatrix.copyFrom(bitmapMatrix);
-			displayObject.__cacheBitmapMatrix.tx = 0;
-			displayObject.__cacheBitmapMatrix.ty = 0;
+						if (filterWidth >= 0.5 && filterHeight >= 0.5)
+						{
+							var needsFill = (displayObject.opaqueBackground != null
+								&& (bitmapWidth != filterWidth || bitmapHeight != filterHeight));
+							var fillColor = displayObject.opaqueBackground != null ? (0xFF << 24) | displayObject.opaqueBackground : 0;
+							var bitmapColor = needsFill ? 0 : fillColor;
+							var allowFramebuffer = (renderer.__type == OPENGL);
 
-			// TODO: Handle dimensions better if object has a scrollRect?
+							if (displayObject.__cacheBitmapData == null
+								|| bitmapWidth > displayObject.__cacheBitmapData.width
+								|| bitmapHeight > displayObject.__cacheBitmapData.height)
+							{
+								displayObject.__cacheBitmapData = new BitmapData(bitmapWidth, bitmapHeight, true, bitmapColor);
 
-			var bitmapWidth = 0, bitmapHeight = 0;
-			var filterWidth = 0, filterHeight = 0;
-			var offsetX = 0., offsetY = 0.;
+								if (displayObject.__cacheBitmap == null) displayObject.__cacheBitmap = new Bitmap();
+								displayObject.__cacheBitmap.__bitmapData = displayObject.__cacheBitmapData;
+								displayObject.__cacheBitmapRenderer = null;
+							}
+							else
+							{
+								displayObject.__cacheBitmapData.__fillRect(displayObject.__cacheBitmapData.rect, bitmapColor, allowFramebuffer);
+							}
 
-			#if (openfl_disable_hdpi || openfl_disable_hdpi_cacheasbitmap)
-			var pixelRatio = 1;
-			#else
-			var pixelRatio = __pixelRatio;
-			#end
+							if (needsFill)
+							{
+								rect.setTo(0, 0, filterWidth, filterHeight);
+								displayObject.__cacheBitmapData.__fillRect(rect, fillColor, allowFramebuffer);
+							}
+						}
+						else
+						{
+							ColorTransform.__pool.release(colorTransform);
 
-			if (updateTransform || needRender)
-			{
-				rect = Rectangle.__pool.get();
+							displayObject.__cacheBitmap = null;
+							displayObject.__cacheBitmapData = null;
+							displayObject.__cacheBitmapData2 = null;
+							displayObject.__cacheBitmapData3 = null;
+							displayObject.__cacheBitmapRenderer = null;
 
-				displayObject.__getFilterBounds(rect, displayObject.__cacheBitmapMatrix);
+							if (displayObject.__drawableType == TEXT_FIELD)
+							{
+								var textField:TextField = cast displayObject;
+								if (textField.__cacheBitmap != null)
+								{
+									textField.__cacheBitmap.__renderTransform.tx -= textField.__offsetX * pixelRatio;
+									textField.__cacheBitmap.__renderTransform.ty -= textField.__offsetY * pixelRatio;
+								}
+							}
 
-				filterWidth = rect.width > 0 ? Math.ceil((rect.width + 1) * pixelRatio) : 0;
-				filterHeight = rect.height > 0 ? Math.ceil((rect.height + 1) * pixelRatio) : 0;
-
-				offsetX = rect.x > 0 ? Math.ceil(rect.x) : Math.floor(rect.x);
-				offsetY = rect.y > 0 ? Math.ceil(rect.y) : Math.floor(rect.y);
-
-				if (displayObject.__cacheBitmapData != null)
-				{
-					if (filterWidth > displayObject.__cacheBitmapData.width || filterHeight > displayObject.__cacheBitmapData.height)
-					{
-						bitmapWidth = Math.ceil(Math.max(filterWidth * 1.25, displayObject.__cacheBitmapData.width));
-						bitmapHeight = Math.ceil(Math.max(filterHeight * 1.25, displayObject.__cacheBitmapData.height));
-						needRender = true;
-					}
-					else
-					{
-						bitmapWidth = displayObject.__cacheBitmapData.width;
-						bitmapHeight = displayObject.__cacheBitmapData.height;
-					}
-				}
-				else
-				{
-					bitmapWidth = filterWidth;
-					bitmapHeight = filterHeight;
-				}
-			}
-
-			if (needRender)
-			{
-				updateTransform = true;
-				displayObject.__cacheBitmapBackground = displayObject.opaqueBackground;
-
-				if (filterWidth >= 0.5 && filterHeight >= 0.5)
-				{
-					var needsFill = (displayObject.opaqueBackground != null
-						&& (bitmapWidth != filterWidth || bitmapHeight != filterHeight));
-					var fillColor = displayObject.opaqueBackground != null ? (0xFF << 24) | displayObject.opaqueBackground : 0;
-					var bitmapColor = needsFill ? 0 : fillColor;
-					var allowFramebuffer = (renderer.__type == OPENGL);
-
-					if (displayObject.__cacheBitmapData == null
-						|| bitmapWidth > displayObject.__cacheBitmapData.width
-						|| bitmapHeight > displayObject.__cacheBitmapData.height)
-					{
-						displayObject.__cacheBitmapData = new BitmapData(bitmapWidth, bitmapHeight, true, bitmapColor);
-
-						if (displayObject.__cacheBitmap == null) displayObject.__cacheBitmap = new Bitmap();
-						displayObject.__cacheBitmap.__bitmapData = displayObject.__cacheBitmapData;
-						displayObject.__cacheBitmapRenderer = null;
+							return true;
+						}
 					}
 					else
 					{
-						displayObject.__cacheBitmapData.__fillRect(displayObject.__cacheBitmapData.rect, bitmapColor, allowFramebuffer);
+						// Should we retain these longer?
+
+						displayObject.__cacheBitmapData = displayObject.__cacheBitmap.bitmapData;
+						displayObject.__cacheBitmapData2 = null;
+						displayObject.__cacheBitmapData3 = null;
 					}
 
-					if (needsFill)
+					if (updateTransform || needRender)
 					{
-						rect.setTo(0, 0, filterWidth, filterHeight);
-						displayObject.__cacheBitmapData.__fillRect(rect, fillColor, allowFramebuffer);
+						displayObject.__cacheBitmap.__worldTransform.copyFrom(displayObject.__worldTransform);
+
+						if (bitmapMatrix == displayObject.__renderTransform)
+						{
+							displayObject.__cacheBitmap.__renderTransform.identity();
+							displayObject.__cacheBitmap.__renderTransform.scale(1 / pixelRatio, 1 / pixelRatio);
+							displayObject.__cacheBitmap.__renderTransform.tx = displayObject.__renderTransform.tx + offsetX;
+							displayObject.__cacheBitmap.__renderTransform.ty = displayObject.__renderTransform.ty + offsetY;
+						}
+						else
+						{
+							displayObject.__cacheBitmap.__renderTransform.copyFrom(displayObject.__cacheBitmapMatrix);
+							displayObject.__cacheBitmap.__renderTransform.invert();
+							displayObject.__cacheBitmap.__renderTransform.concat(displayObject.__renderTransform);
+							displayObject.__cacheBitmap.__renderTransform.a *= 1 / pixelRatio;
+							displayObject.__cacheBitmap.__renderTransform.d *= 1 / pixelRatio;
+							displayObject.__cacheBitmap.__renderTransform.tx += offsetX;
+							displayObject.__cacheBitmap.__renderTransform.ty += offsetY;
+						}
 					}
+
+					displayObject.__cacheBitmap.smoothing = renderer.__allowSmoothing;
+					displayObject.__cacheBitmap.__renderable = displayObject.__renderable;
+					displayObject.__cacheBitmap.__worldAlpha = displayObject.__worldAlpha;
+					displayObject.__cacheBitmap.__worldBlendMode = displayObject.__worldBlendMode;
+					displayObject.__cacheBitmap.__worldShader = displayObject.__worldShader;
+					// displayObject.__cacheBitmap.__scrollRect = displayObject.__scrollRect;
+					// displayObject.__cacheBitmap.filters = displayObject.filters;
+					displayObject.__cacheBitmap.mask = displayObject.__mask;
+
+					if (needRender)
+					{
+						#if lime
+						if (displayObject.__cacheBitmapRenderer == null || renderType != displayObject.__cacheBitmapRenderer.__type)
+						{
+							if (renderType == OPENGL)
+							{
+								displayObject.__cacheBitmapRenderer = new OpenGLRenderer(cast(renderer, OpenGLRenderer).__context3D,
+									displayObject.__cacheBitmapData);
+							}
+							else
+							{
+								if (displayObject.__cacheBitmapData.image == null)
+								{
+									var color = displayObject.opaqueBackground != null ? (0xFF << 24) | displayObject.opaqueBackground : 0;
+									displayObject.__cacheBitmapData = new BitmapData(bitmapWidth, bitmapHeight, true, color);
+									displayObject.__cacheBitmap.__bitmapData = displayObject.__cacheBitmapData;
+								}
+
+								#if (js && html5)
+								ImageCanvasUtil.convertToCanvas(displayObject.__cacheBitmapData.image);
+								displayObject.__cacheBitmapRenderer = new CanvasRenderer(displayObject.__cacheBitmapData.image.buffer.__srcContext);
+								#else
+								displayObject.__cacheBitmapRenderer = new CairoRenderer(new Cairo(displayObject.__cacheBitmapData.getSurface()));
+								#end
+							}
+
+							displayObject.__cacheBitmapRenderer.__worldTransform = new Matrix();
+							displayObject.__cacheBitmapRenderer.__worldColorTransform = new ColorTransform();
+						}
+						#else
+						return false;
+						#end
+
+						if (displayObject.__cacheBitmapColorTransform == null) displayObject.__cacheBitmapColorTransform = new ColorTransform();
+
+						displayObject.__cacheBitmapRenderer.__stage = displayObject.stage;
+
+						displayObject.__cacheBitmapRenderer.__allowSmoothing = renderer.__allowSmoothing;
+						displayObject.__cacheBitmapRenderer.__setBlendMode(NORMAL);
+						displayObject.__cacheBitmapRenderer.__worldAlpha = 1 / displayObject.__worldAlpha;
+
+						displayObject.__cacheBitmapRenderer.__worldTransform.copyFrom(displayObject.__renderTransform);
+						displayObject.__cacheBitmapRenderer.__worldTransform.invert();
+						displayObject.__cacheBitmapRenderer.__worldTransform.concat(displayObject.__cacheBitmapMatrix);
+						displayObject.__cacheBitmapRenderer.__worldTransform.tx -= offsetX;
+						displayObject.__cacheBitmapRenderer.__worldTransform.ty -= offsetY;
+						displayObject.__cacheBitmapRenderer.__worldTransform.scale(pixelRatio, pixelRatio);
+
+						displayObject.__cacheBitmapRenderer.__pixelRatio = pixelRatio;
+
+						displayObject.__cacheBitmapRenderer.__worldColorTransform.__copyFrom(colorTransform);
+						displayObject.__cacheBitmapRenderer.__worldColorTransform.__invert();
+
+						displayObject.__isCacheBitmapRender = true;
+
+						if (displayObject.__cacheBitmapRenderer.__type == OPENGL)
+						{
+							var parentRenderer:OpenGLRenderer = cast renderer;
+							var childRenderer:OpenGLRenderer = cast displayObject.__cacheBitmapRenderer;
+
+							var context = childRenderer.__context3D;
+
+							var cacheRTT = context.__state.renderToTexture;
+							var cacheRTTDepthStencil = context.__state.renderToTextureDepthStencil;
+							var cacheRTTAntiAlias = context.__state.renderToTextureAntiAlias;
+							var cacheRTTSurfaceSelector = context.__state.renderToTextureSurfaceSelector;
+
+							// var cacheFramebuffer = context.__contextState.__currentGLFramebuffer;
+
+							var cacheBlendMode = parentRenderer.__blendMode;
+							parentRenderer.__suspendClipAndMask();
+							childRenderer.__copyShader(parentRenderer);
+							// childRenderer.__copyState (parentRenderer);
+
+							displayObject.__cacheBitmapData.__setUVRect(context, 0, 0, filterWidth, filterHeight);
+							childRenderer.__setRenderTarget(displayObject.__cacheBitmapData);
+							if (displayObject.__cacheBitmapData.image != null)
+								displayObject.__cacheBitmapData.__textureVersion = displayObject.__cacheBitmapData.image.version
+								+ 1;
+
+							displayObject.__cacheBitmapData.__drawGL(displayObject, childRenderer);
+
+							if (hasFilters)
+							{
+								var needSecondBitmapData = true;
+								var needCopyOfOriginal = false;
+
+								for (filter in displayObject.__filters)
+								{
+									// if (filter.__needSecondBitmapData) {
+									// 	needSecondBitmapData = true;
+									// }
+									if (filter.__preserveObject)
+									{
+										needCopyOfOriginal = true;
+									}
+								}
+
+								var bitmap = displayObject.__cacheBitmapData;
+								var bitmap2 = null;
+								var bitmap3 = null;
+
+								// if (needSecondBitmapData) {
+								if (displayObject.__cacheBitmapData2 == null
+									|| bitmapWidth > displayObject.__cacheBitmapData2.width
+									|| bitmapHeight > displayObject.__cacheBitmapData2.height)
+								{
+									displayObject.__cacheBitmapData2 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
+								}
+								else
+								{
+									displayObject.__cacheBitmapData2.fillRect(displayObject.__cacheBitmapData2.rect, 0);
+									if (displayObject.__cacheBitmapData2.image != null)
+									{
+										displayObject.__cacheBitmapData2.__textureVersion = displayObject.__cacheBitmapData2.image.version + 1;
+									}
+								}
+								displayObject.__cacheBitmapData2.__setUVRect(context, 0, 0, filterWidth, filterHeight);
+								bitmap2 = displayObject.__cacheBitmapData2;
+								// } else {
+								// 	bitmap2 = bitmapData;
+								// }
+
+								if (needCopyOfOriginal)
+								{
+									if (displayObject.__cacheBitmapData3 == null
+										|| bitmapWidth > displayObject.__cacheBitmapData3.width
+										|| bitmapHeight > displayObject.__cacheBitmapData3.height)
+									{
+										displayObject.__cacheBitmapData3 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
+									}
+									else
+									{
+										displayObject.__cacheBitmapData3.fillRect(displayObject.__cacheBitmapData3.rect, 0);
+										if (displayObject.__cacheBitmapData3.image != null)
+										{
+											displayObject.__cacheBitmapData3.__textureVersion = displayObject.__cacheBitmapData3.image.version + 1;
+										}
+									}
+									displayObject.__cacheBitmapData3.__setUVRect(context, 0, 0, filterWidth, filterHeight);
+									bitmap3 = displayObject.__cacheBitmapData3;
+								}
+
+								childRenderer.__setBlendMode(NORMAL);
+								childRenderer.__worldAlpha = 1;
+								childRenderer.__worldTransform.identity();
+								childRenderer.__worldColorTransform.__identity();
+
+								// var sourceRect = bitmap.rect;
+								// if (__tempPoint == null) __tempPoint = new Point ();
+								// var destPoint = __tempPoint;
+								var shader, cacheBitmap;
+
+								for (filter in displayObject.__filters)
+								{
+									if (filter.__preserveObject)
+									{
+										childRenderer.__setRenderTarget(bitmap3);
+										childRenderer.__renderFilterPass(bitmap, childRenderer.__defaultDisplayShader, filter.__smooth);
+									}
+
+									for (i in 0...filter.__numShaderPasses)
+									{
+										shader = filter.__initShader(childRenderer, i, filter.__preserveObject ? bitmap3 : null);
+										childRenderer.__setBlendMode(filter.__shaderBlendMode);
+										childRenderer.__setRenderTarget(bitmap2);
+										childRenderer.__renderFilterPass(bitmap, shader, filter.__smooth);
+
+										cacheBitmap = bitmap;
+										bitmap = bitmap2;
+										bitmap2 = cacheBitmap;
+									}
+
+									filter.__renderDirty = false;
+								}
+
+								displayObject.__cacheBitmap.__bitmapData = bitmap;
+							}
+
+							parentRenderer.__blendMode = NORMAL;
+							parentRenderer.__setBlendMode(cacheBlendMode);
+							parentRenderer.__copyShader(childRenderer);
+
+							if (cacheRTT != null)
+							{
+								context.setRenderToTexture(cacheRTT, cacheRTTDepthStencil, cacheRTTAntiAlias, cacheRTTSurfaceSelector);
+							}
+							else
+							{
+								context.setRenderToBackBuffer();
+							}
+
+							// context.__bindGLFramebuffer (cacheFramebuffer);
+
+							// parentRenderer.__restoreState (childRenderer);
+							parentRenderer.__resumeClipAndMask(childRenderer);
+							parentRenderer.setViewport();
+
+							displayObject.__cacheBitmapColorTransform.__copyFrom(colorTransform);
+						}
+						else
+						{
+							#if (js && html5)
+							displayObject.__cacheBitmapData.__drawCanvas(displayObject, cast displayObject.__cacheBitmapRenderer);
+							#else
+							displayObject.__cacheBitmapData.__drawCairo(displayObject, cast displayObject.__cacheBitmapRenderer);
+							#end
+
+							if (hasFilters)
+							{
+								var needSecondBitmapData = false;
+								var needCopyOfOriginal = false;
+
+								for (filter in displayObject.__filters)
+								{
+									if (filter.__needSecondBitmapData)
+									{
+										needSecondBitmapData = true;
+									}
+									if (filter.__preserveObject)
+									{
+										needCopyOfOriginal = true;
+									}
+								}
+
+								var bitmap = displayObject.__cacheBitmapData;
+								var bitmap2 = null;
+								var bitmap3 = null;
+
+								if (needSecondBitmapData)
+								{
+									if (displayObject.__cacheBitmapData2 == null
+										|| displayObject.__cacheBitmapData2.image == null
+										|| bitmapWidth > displayObject.__cacheBitmapData2.width
+										|| bitmapHeight > displayObject.__cacheBitmapData2.height)
+									{
+										displayObject.__cacheBitmapData2 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
+									}
+									else
+									{
+										displayObject.__cacheBitmapData2.fillRect(displayObject.__cacheBitmapData2.rect, 0);
+									}
+									bitmap2 = displayObject.__cacheBitmapData2;
+								}
+								else
+								{
+									bitmap2 = bitmap;
+								}
+
+								if (needCopyOfOriginal)
+								{
+									if (displayObject.__cacheBitmapData3 == null
+										|| displayObject.__cacheBitmapData3.image == null
+										|| bitmapWidth > displayObject.__cacheBitmapData3.width
+										|| bitmapHeight > displayObject.__cacheBitmapData3.height)
+									{
+										displayObject.__cacheBitmapData3 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
+									}
+									else
+									{
+										displayObject.__cacheBitmapData3.fillRect(displayObject.__cacheBitmapData3.rect, 0);
+									}
+									bitmap3 = displayObject.__cacheBitmapData3;
+								}
+
+								if (displayObject.__tempPoint == null) displayObject.__tempPoint = new Point();
+								var destPoint = displayObject.__tempPoint;
+								var cacheBitmap, lastBitmap;
+
+								for (filter in displayObject.__filters)
+								{
+									if (filter.__preserveObject)
+									{
+										bitmap3.copyPixels(bitmap, bitmap.rect, destPoint);
+									}
+
+									lastBitmap = filter.__applyFilter(bitmap2, bitmap, bitmap.rect, destPoint);
+
+									if (filter.__preserveObject)
+									{
+										lastBitmap.draw(bitmap3, null,
+											displayObject.__objectTransform != null ? displayObject.__objectTransform.__colorTransform : null);
+									}
+									filter.__renderDirty = false;
+
+									if (needSecondBitmapData && lastBitmap == bitmap2)
+									{
+										cacheBitmap = bitmap;
+										bitmap = bitmap2;
+										bitmap2 = cacheBitmap;
+									}
+								}
+
+								if (displayObject.__cacheBitmapData != bitmap)
+								{
+									// TODO: Fix issue with swapping __cacheBitmap.__bitmapData
+									// __cacheBitmapData.copyPixels (bitmap, bitmap.rect, destPoint);
+
+									// Adding __cacheBitmapRenderer = null; makes this work
+									cacheBitmap = displayObject.__cacheBitmapData;
+									displayObject.__cacheBitmapData = bitmap;
+									displayObject.__cacheBitmapData2 = cacheBitmap;
+									displayObject.__cacheBitmap.__bitmapData = displayObject.__cacheBitmapData;
+									displayObject.__cacheBitmapRenderer = null;
+								}
+
+								displayObject.__cacheBitmap.__imageVersion = displayObject.__cacheBitmapData.__textureVersion;
+							}
+
+							displayObject.__cacheBitmapColorTransform.__copyFrom(colorTransform);
+
+							if (!displayObject.__cacheBitmapColorTransform.__isDefault(true))
+							{
+								displayObject.__cacheBitmapColorTransform.alphaMultiplier = 1;
+								displayObject.__cacheBitmapData.colorTransform(displayObject.__cacheBitmapData.rect, displayObject.__cacheBitmapColorTransform);
+							}
+						}
+
+						displayObject.__isCacheBitmapRender = false;
+					}
+
+					if (updateTransform || needRender)
+					{
+						Rectangle.__pool.release(rect);
+					}
+
+					updated = updateTransform;
 				}
-				else
+				else if (displayObject.__cacheBitmap != null)
 				{
-					ColorTransform.__pool.release(colorTransform);
+					if (renderer.__type == DOM)
+					{
+						var domRenderer:DOMRenderer = cast renderer;
+						domRenderer.__renderDrawableClear(displayObject.__cacheBitmap);
+					}
 
 					displayObject.__cacheBitmap = null;
 					displayObject.__cacheBitmapData = null;
 					displayObject.__cacheBitmapData2 = null;
 					displayObject.__cacheBitmapData3 = null;
+					displayObject.__cacheBitmapColorTransform = null;
 					displayObject.__cacheBitmapRenderer = null;
 
-					if (displayObject.__drawableType == TEXT_FIELD)
-					{
-						var textField:TextField = cast displayObject;
-						if (textField.__cacheBitmap != null)
-						{
-							textField.__cacheBitmap.__renderTransform.tx -= textField.__offsetX * pixelRatio;
-							textField.__cacheBitmap.__renderTransform.ty -= textField.__offsetY * pixelRatio;
-						}
-					}
-
-					return true;
+					updated = true;
 				}
-			}
-			else
-			{
-				// Should we retain these longer?
 
-				displayObject.__cacheBitmapData = displayObject.__cacheBitmap.bitmapData;
-				displayObject.__cacheBitmapData2 = null;
-				displayObject.__cacheBitmapData3 = null;
-			}
+				ColorTransform.__pool.release(colorTransform);
 
-			if (updateTransform || needRender)
-			{
-				displayObject.__cacheBitmap.__worldTransform.copyFrom(displayObject.__worldTransform);
-
-				if (bitmapMatrix == displayObject.__renderTransform)
+				if (updated && displayObject.__drawableType == TEXT_FIELD)
 				{
-					displayObject.__cacheBitmap.__renderTransform.identity();
-					displayObject.__cacheBitmap.__renderTransform.scale(1 / pixelRatio, 1 / pixelRatio);
-					displayObject.__cacheBitmap.__renderTransform.tx = displayObject.__renderTransform.tx + offsetX;
-					displayObject.__cacheBitmap.__renderTransform.ty = displayObject.__renderTransform.ty + offsetY;
-				}
-				else
-				{
-					displayObject.__cacheBitmap.__renderTransform.copyFrom(displayObject.__cacheBitmapMatrix);
-					displayObject.__cacheBitmap.__renderTransform.invert();
-					displayObject.__cacheBitmap.__renderTransform.concat(displayObject.__renderTransform);
-					displayObject.__cacheBitmap.__renderTransform.a *= 1 / pixelRatio;
-					displayObject.__cacheBitmap.__renderTransform.d *= 1 / pixelRatio;
-					displayObject.__cacheBitmap.__renderTransform.tx += offsetX;
-					displayObject.__cacheBitmap.__renderTransform.ty += offsetY;
-				}
-			}
-
-			displayObject.__cacheBitmap.smoothing = renderer.__allowSmoothing;
-			displayObject.__cacheBitmap.__renderable = displayObject.__renderable;
-			displayObject.__cacheBitmap.__worldAlpha = displayObject.__worldAlpha;
-			displayObject.__cacheBitmap.__worldBlendMode = displayObject.__worldBlendMode;
-			displayObject.__cacheBitmap.__worldShader = displayObject.__worldShader;
-			// displayObject.__cacheBitmap.__scrollRect = displayObject.__scrollRect;
-			// displayObject.__cacheBitmap.filters = displayObject.filters;
-			displayObject.__cacheBitmap.mask = displayObject.__mask;
-
-			if (needRender)
-			{
-				#if lime
-				if (displayObject.__cacheBitmapRenderer == null || renderType != displayObject.__cacheBitmapRenderer.__type)
-				{
-					if (renderType == OPENGL)
+					var textField:TextField = cast displayObject;
+					if (textField.__cacheBitmap != null)
 					{
-						displayObject.__cacheBitmapRenderer = new OpenGLRenderer(cast(renderer, OpenGLRenderer).__context3D, displayObject.__cacheBitmapData);
+						textField.__cacheBitmap.__renderTransform.tx -= textField.__offsetX;
+						textField.__cacheBitmap.__renderTransform.ty -= textField.__offsetY;
 					}
-					else
-					{
-						if (displayObject.__cacheBitmapData.image == null)
-						{
-							var color = displayObject.opaqueBackground != null ? (0xFF << 24) | displayObject.opaqueBackground : 0;
-							displayObject.__cacheBitmapData = new BitmapData(bitmapWidth, bitmapHeight, true, color);
-							displayObject.__cacheBitmap.__bitmapData = displayObject.__cacheBitmapData;
-						}
-
-						#if (js && html5)
-						ImageCanvasUtil.convertToCanvas(displayObject.__cacheBitmapData.image);
-						displayObject.__cacheBitmapRenderer = new CanvasRenderer(displayObject.__cacheBitmapData.image.buffer.__srcContext);
-						#else
-						displayObject.__cacheBitmapRenderer = new CairoRenderer(new Cairo(displayObject.__cacheBitmapData.getSurface()));
-						#end
-					}
-
-					displayObject.__cacheBitmapRenderer.__worldTransform = new Matrix();
-					displayObject.__cacheBitmapRenderer.__worldColorTransform = new ColorTransform();
 				}
+
+				return updated;
 				#else
 				return false;
 				#end
-
-				if (displayObject.__cacheBitmapColorTransform == null) displayObject.__cacheBitmapColorTransform = new ColorTransform();
-
-				displayObject.__cacheBitmapRenderer.__stage = displayObject.stage;
-
-				displayObject.__cacheBitmapRenderer.__allowSmoothing = renderer.__allowSmoothing;
-				displayObject.__cacheBitmapRenderer.__setBlendMode(NORMAL);
-				displayObject.__cacheBitmapRenderer.__worldAlpha = 1 / displayObject.__worldAlpha;
-
-				displayObject.__cacheBitmapRenderer.__worldTransform.copyFrom(displayObject.__renderTransform);
-				displayObject.__cacheBitmapRenderer.__worldTransform.invert();
-				displayObject.__cacheBitmapRenderer.__worldTransform.concat(displayObject.__cacheBitmapMatrix);
-				displayObject.__cacheBitmapRenderer.__worldTransform.tx -= offsetX;
-				displayObject.__cacheBitmapRenderer.__worldTransform.ty -= offsetY;
-				displayObject.__cacheBitmapRenderer.__worldTransform.scale(pixelRatio, pixelRatio);
-
-				displayObject.__cacheBitmapRenderer.__pixelRatio = pixelRatio;
-
-				displayObject.__cacheBitmapRenderer.__worldColorTransform.__copyFrom(colorTransform);
-				displayObject.__cacheBitmapRenderer.__worldColorTransform.__invert();
-
-				displayObject.__isCacheBitmapRender = true;
-
-				if (displayObject.__cacheBitmapRenderer.__type == OPENGL)
-				{
-					var parentRenderer:OpenGLRenderer = cast renderer;
-					var childRenderer:OpenGLRenderer = cast displayObject.__cacheBitmapRenderer;
-
-					var context = childRenderer.__context3D;
-
-					var cacheRTT = context.__state.renderToTexture;
-					var cacheRTTDepthStencil = context.__state.renderToTextureDepthStencil;
-					var cacheRTTAntiAlias = context.__state.renderToTextureAntiAlias;
-					var cacheRTTSurfaceSelector = context.__state.renderToTextureSurfaceSelector;
-
-					// var cacheFramebuffer = context.__contextState.__currentGLFramebuffer;
-
-					var cacheBlendMode = parentRenderer.__blendMode;
-					parentRenderer.__suspendClipAndMask();
-					childRenderer.__copyShader(parentRenderer);
-					// childRenderer.__copyState (parentRenderer);
-
-					displayObject.__cacheBitmapData.__setUVRect(context, 0, 0, filterWidth, filterHeight);
-					childRenderer.__setRenderTarget(displayObject.__cacheBitmapData);
-					if (displayObject.__cacheBitmapData.image != null)
-						displayObject.__cacheBitmapData.__textureVersion = displayObject.__cacheBitmapData.image.version
-						+ 1;
-
-					displayObject.__cacheBitmapData.__drawGL(displayObject, childRenderer);
-
-					if (hasFilters)
-					{
-						var needSecondBitmapData = true;
-						var needCopyOfOriginal = false;
-
-						for (filter in displayObject.__filters)
-						{
-							// if (filter.__needSecondBitmapData) {
-							// 	needSecondBitmapData = true;
-							// }
-							if (filter.__preserveObject)
-							{
-								needCopyOfOriginal = true;
-							}
-						}
-
-						var bitmap = displayObject.__cacheBitmapData;
-						var bitmap2 = null;
-						var bitmap3 = null;
-
-						// if (needSecondBitmapData) {
-						if (displayObject.__cacheBitmapData2 == null
-							|| bitmapWidth > displayObject.__cacheBitmapData2.width
-							|| bitmapHeight > displayObject.__cacheBitmapData2.height)
-						{
-							displayObject.__cacheBitmapData2 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
-						}
-						else
-						{
-							displayObject.__cacheBitmapData2.fillRect(displayObject.__cacheBitmapData2.rect, 0);
-							if (displayObject.__cacheBitmapData2.image != null)
-							{
-								displayObject.__cacheBitmapData2.__textureVersion = displayObject.__cacheBitmapData2.image.version + 1;
-							}
-						}
-						displayObject.__cacheBitmapData2.__setUVRect(context, 0, 0, filterWidth, filterHeight);
-						bitmap2 = displayObject.__cacheBitmapData2;
-						// } else {
-						// 	bitmap2 = bitmapData;
-						// }
-
-						if (needCopyOfOriginal)
-						{
-							if (displayObject.__cacheBitmapData3 == null
-								|| bitmapWidth > displayObject.__cacheBitmapData3.width
-								|| bitmapHeight > displayObject.__cacheBitmapData3.height)
-							{
-								displayObject.__cacheBitmapData3 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
-							}
-							else
-							{
-								displayObject.__cacheBitmapData3.fillRect(displayObject.__cacheBitmapData3.rect, 0);
-								if (displayObject.__cacheBitmapData3.image != null)
-								{
-									displayObject.__cacheBitmapData3.__textureVersion = displayObject.__cacheBitmapData3.image.version + 1;
-								}
-							}
-							displayObject.__cacheBitmapData3.__setUVRect(context, 0, 0, filterWidth, filterHeight);
-							bitmap3 = displayObject.__cacheBitmapData3;
-						}
-
-						childRenderer.__setBlendMode(NORMAL);
-						childRenderer.__worldAlpha = 1;
-						childRenderer.__worldTransform.identity();
-						childRenderer.__worldColorTransform.__identity();
-
-						// var sourceRect = bitmap.rect;
-						// if (__tempPoint == null) __tempPoint = new Point ();
-						// var destPoint = __tempPoint;
-						var shader, cacheBitmap;
-
-						for (filter in displayObject.__filters)
-						{
-							if (filter.__preserveObject)
-							{
-								childRenderer.__setRenderTarget(bitmap3);
-								childRenderer.__renderFilterPass(bitmap, childRenderer.__defaultDisplayShader, filter.__smooth);
-							}
-
-							for (i in 0...filter.__numShaderPasses)
-							{
-								shader = filter.__initShader(childRenderer, i, filter.__preserveObject ? bitmap3 : null);
-								childRenderer.__setBlendMode(filter.__shaderBlendMode);
-								childRenderer.__setRenderTarget(bitmap2);
-								childRenderer.__renderFilterPass(bitmap, shader, filter.__smooth);
-
-								cacheBitmap = bitmap;
-								bitmap = bitmap2;
-								bitmap2 = cacheBitmap;
-							}
-
-							filter.__renderDirty = false;
-						}
-
-						displayObject.__cacheBitmap.__bitmapData = bitmap;
-					}
-
-					parentRenderer.__blendMode = NORMAL;
-					parentRenderer.__setBlendMode(cacheBlendMode);
-					parentRenderer.__copyShader(childRenderer);
-
-					if (cacheRTT != null)
-					{
-						context.setRenderToTexture(cacheRTT, cacheRTTDepthStencil, cacheRTTAntiAlias, cacheRTTSurfaceSelector);
-					}
-					else
-					{
-						context.setRenderToBackBuffer();
-					}
-
-					// context.__bindGLFramebuffer (cacheFramebuffer);
-
-					// parentRenderer.__restoreState (childRenderer);
-					parentRenderer.__resumeClipAndMask(childRenderer);
-					parentRenderer.setViewport();
-
-					displayObject.__cacheBitmapColorTransform.__copyFrom(colorTransform);
-				}
-				else
-				{
-					#if (js && html5)
-					displayObject.__cacheBitmapData.__drawCanvas(displayObject, cast displayObject.__cacheBitmapRenderer);
-					#else
-					displayObject.__cacheBitmapData.__drawCairo(displayObject, cast displayObject.__cacheBitmapRenderer);
-					#end
-
-					if (hasFilters)
-					{
-						var needSecondBitmapData = false;
-						var needCopyOfOriginal = false;
-
-						for (filter in displayObject.__filters)
-						{
-							if (filter.__needSecondBitmapData)
-							{
-								needSecondBitmapData = true;
-							}
-							if (filter.__preserveObject)
-							{
-								needCopyOfOriginal = true;
-							}
-						}
-
-						var bitmap = displayObject.__cacheBitmapData;
-						var bitmap2 = null;
-						var bitmap3 = null;
-
-						if (needSecondBitmapData)
-						{
-							if (displayObject.__cacheBitmapData2 == null
-								|| displayObject.__cacheBitmapData2.image == null
-								|| bitmapWidth > displayObject.__cacheBitmapData2.width
-								|| bitmapHeight > displayObject.__cacheBitmapData2.height)
-							{
-								displayObject.__cacheBitmapData2 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
-							}
-							else
-							{
-								displayObject.__cacheBitmapData2.fillRect(displayObject.__cacheBitmapData2.rect, 0);
-							}
-							bitmap2 = displayObject.__cacheBitmapData2;
-						}
-						else
-						{
-							bitmap2 = bitmap;
-						}
-
-						if (needCopyOfOriginal)
-						{
-							if (displayObject.__cacheBitmapData3 == null
-								|| displayObject.__cacheBitmapData3.image == null
-								|| bitmapWidth > displayObject.__cacheBitmapData3.width
-								|| bitmapHeight > displayObject.__cacheBitmapData3.height)
-							{
-								displayObject.__cacheBitmapData3 = new BitmapData(bitmapWidth, bitmapHeight, true, 0);
-							}
-							else
-							{
-								displayObject.__cacheBitmapData3.fillRect(displayObject.__cacheBitmapData3.rect, 0);
-							}
-							bitmap3 = displayObject.__cacheBitmapData3;
-						}
-
-						if (displayObject.__tempPoint == null) displayObject.__tempPoint = new Point();
-						var destPoint = displayObject.__tempPoint;
-						var cacheBitmap, lastBitmap;
-
-						for (filter in displayObject.__filters)
-						{
-							if (filter.__preserveObject)
-							{
-								bitmap3.copyPixels(bitmap, bitmap.rect, destPoint);
-							}
-
-							lastBitmap = filter.__applyFilter(bitmap2, bitmap, bitmap.rect, destPoint);
-
-							if (filter.__preserveObject)
-							{
-								lastBitmap.draw(bitmap3, null,
-									displayObject.__objectTransform != null ? displayObject.__objectTransform.__colorTransform : null);
-							}
-							filter.__renderDirty = false;
-
-							if (needSecondBitmapData && lastBitmap == bitmap2)
-							{
-								cacheBitmap = bitmap;
-								bitmap = bitmap2;
-								bitmap2 = cacheBitmap;
-							}
-						}
-
-						if (displayObject.__cacheBitmapData != bitmap)
-						{
-							// TODO: Fix issue with swapping __cacheBitmap.__bitmapData
-							// __cacheBitmapData.copyPixels (bitmap, bitmap.rect, destPoint);
-
-							// Adding __cacheBitmapRenderer = null; makes this work
-							cacheBitmap = displayObject.__cacheBitmapData;
-							displayObject.__cacheBitmapData = bitmap;
-							displayObject.__cacheBitmapData2 = cacheBitmap;
-							displayObject.__cacheBitmap.__bitmapData = displayObject.__cacheBitmapData;
-							displayObject.__cacheBitmapRenderer = null;
-						}
-
-						displayObject.__cacheBitmap.__imageVersion = displayObject.__cacheBitmapData.__textureVersion;
-					}
-
-					displayObject.__cacheBitmapColorTransform.__copyFrom(colorTransform);
-
-					if (!displayObject.__cacheBitmapColorTransform.__isDefault(true))
-					{
-						displayObject.__cacheBitmapColorTransform.alphaMultiplier = 1;
-						displayObject.__cacheBitmapData.colorTransform(displayObject.__cacheBitmapData.rect, displayObject.__cacheBitmapColorTransform);
-					}
-				}
-
-				displayObject.__isCacheBitmapRender = false;
-			}
-
-			if (updateTransform || needRender)
-			{
-				Rectangle.__pool.release(rect);
-			}
-
-			updated = updateTransform;
-		}
-		else if (displayObject.__cacheBitmap != null)
-		{
-			if (renderer.__type == DOM)
-			{
-				var domRenderer:DOMRenderer = cast renderer;
-				domRenderer.__renderDrawableClear(displayObject.__cacheBitmap);
-			}
-
-			displayObject.__cacheBitmap = null;
-			displayObject.__cacheBitmapData = null;
-			displayObject.__cacheBitmapData2 = null;
-			displayObject.__cacheBitmapData3 = null;
-			displayObject.__cacheBitmapColorTransform = null;
-			displayObject.__cacheBitmapRenderer = null;
-
-			updated = true;
-		}
-
-		ColorTransform.__pool.release(colorTransform);
-
-		if (updated && displayObject.__drawableType == TEXT_FIELD)
-		{
-			var textField:TextField = cast displayObject;
-			if (textField.__cacheBitmap != null)
-			{
-				textField.__cacheBitmap.__renderTransform.tx -= textField.__offsetX;
-				textField.__cacheBitmap.__renderTransform.ty -= textField.__offsetY;
 			}
 		}
-
-		return updated;
 		#else
-		return false;
+		typedef DisplayObjectRenderer = Dynamic;
 		#end
-	}
-}
-#else
-typedef DisplayObjectRenderer = Dynamic;
-#end

@@ -1,6 +1,5 @@
 package openfl.ui;
 
-#if !flash
 #if lime
 import lime.ui.MouseCursor as LimeMouseCursor;
 #end
@@ -10,7 +9,6 @@ import lime.ui.MouseCursor as LimeMouseCursor;
 	the `cursor` property of the Mouse class.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract MouseCursor(String) from String to String
-
 {
 	/**
 		Used to specify that the arrow cursor should be used.
@@ -92,6 +90,3 @@ import lime.ui.MouseCursor as LimeMouseCursor;
 	}
 	#end
 }
-#else
-typedef MouseCursor = flash.ui.MouseCursor;
-#end

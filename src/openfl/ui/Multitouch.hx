@@ -1,6 +1,5 @@
 package openfl.ui;
 
-#if !flash
 import openfl.Vector;
 
 /**
@@ -137,13 +136,4 @@ import openfl.Vector;
 		}
 
 		return false;
-		#elseif !mac
-		return true;
-		#else
-		return false;
-		#end
-	}
-}
-#else
-typedef Multitouch = flash.ui.Multitouch;
-#end
+		}}

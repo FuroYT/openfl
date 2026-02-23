@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.geom.Point;
 import openfl.geom.Rectangle;
 import openfl.ui.MouseCursor;
@@ -389,6 +388,3 @@ class Sprite extends DisplayObjectContainer
 		return __buttonMode = value;
 	}
 }
-#else
-typedef Sprite = flash.display.Sprite;
-#end

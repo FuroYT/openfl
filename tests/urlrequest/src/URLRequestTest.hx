@@ -63,12 +63,7 @@ class URLRequestTest extends Test
 		var urlRequest = new URLRequest();
 		var defaultValue = urlRequest.userAgent;
 
-		#if flash
-		Assert.notNull(defaultValue);
-		Assert.isTrue(defaultValue.length > 0);
-		#else
 		Assert.isNull(defaultValue);
-		#end
 	}
 
 	public function test_new_()

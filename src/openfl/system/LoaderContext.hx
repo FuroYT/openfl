@@ -1,6 +1,5 @@
 package openfl.system;
 
-#if !flash
 /**
 	The LoaderContext class provides options for loading SWF files and other
 	media by using the Loader class. The LoaderContext class is used as the
@@ -270,7 +269,6 @@ class LoaderContext
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash11) public var imageDecodingPolicy:openfl.system.ImageDecodingPolicy;
 	#end
-
 	#if false
 	/**
 		An Object containing the parameters to pass to the LoaderInfo object
@@ -319,7 +317,6 @@ class LoaderContext
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash11) public var parameters:Dynamic;
 	#end
-
 	#if false
 	/**
 		The parent to which the Loader will attempt to add the loaded content.
@@ -429,6 +426,3 @@ class LoaderContext
 		allowLoadBytesCodeExecution = true;
 	}
 }
-#else
-typedef LoaderContext = flash.system.LoaderContext;
-#end

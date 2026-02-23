@@ -1,6 +1,5 @@
 package openfl.media;
 
-#if !flash
 import openfl.display3D._internal.GLBuffer;
 import openfl.display3D.textures.RectangleTexture;
 import openfl.display3D.Context3D;
@@ -344,160 +343,153 @@ class Video extends DisplayObject
 		}
 
 		return __texture;
-		#else
-		return null;
-		#end
-	}
+		} @:noCompletion private function __getVertexBuffer(context:Context3D):VertexBuffer3D
 
-	@:noCompletion private function __getVertexBuffer(context:Context3D):VertexBuffer3D
-	{
-		#if (lime || js)
-		var gl = context.gl;
-
-		if (__vertexBuffer == null
-			|| __vertexBufferContext != context.__context
-			|| __currentWidth != width
-			|| __currentHeight != height)
 		{
-			__currentWidth = width;
-			__currentHeight = height;
-			#if openfl_power_of_two
-			var newWidth = 1;
-			var newHeight = 1;
+			#if (lime || js)
+			var gl = context.gl;
 
-			while (newWidth < width)
+			if (__vertexBuffer == null
+				|| __vertexBufferContext != context.__context
+				|| __currentWidth != width
+				|| __currentHeight != height)
 			{
-				newWidth <<= 1;
-			}
+				__currentWidth = width;
+				__currentHeight = height;
+				#if openfl_power_of_two
+				var newWidth = 1;
+				var newHeight = 1;
 
-			while (newHeight < height)
-			{
-				newHeight <<= 1;
-			}
+				while (newWidth < width)
+				{
+					newWidth <<= 1;
+				}
 
-			var uvWidth = width / newWidth;
-			var uvHeight = height / newHeight;
-			#else
-			var uvWidth = 1;
-			var uvHeight = 1;
+				while (newHeight < height)
+				{
+					newHeight <<= 1;
+				}
+
+				var uvWidth = width / newWidth;
+				var uvHeight = height / newHeight;
+				#else
+				var uvWidth = 1;
+				var uvHeight = 1;
+				#end
+
+				__vertexBufferData = new Float32Array(VERTEX_BUFFER_STRIDE * 4);
+
+				__vertexBufferData[0] = width;
+				__vertexBufferData[1] = height;
+				__vertexBufferData[3] = uvWidth;
+				__vertexBufferData[4] = uvHeight;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = height;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvHeight;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = width;
+				__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvWidth;
+
+				__vertexBufferContext = context.__context;
+				__vertexBuffer = context.createVertexBuffer(3, VERTEX_BUFFER_STRIDE);
+				__vertexBuffer.uploadFromTypedArray(__vertexBufferData);
+			}
 			#end
 
-			__vertexBufferData = new Float32Array(VERTEX_BUFFER_STRIDE * 4);
-
-			__vertexBufferData[0] = width;
-			__vertexBufferData[1] = height;
-			__vertexBufferData[3] = uvWidth;
-			__vertexBufferData[4] = uvHeight;
-			__vertexBufferData[VERTEX_BUFFER_STRIDE + 1] = height;
-			__vertexBufferData[VERTEX_BUFFER_STRIDE + 4] = uvHeight;
-			__vertexBufferData[VERTEX_BUFFER_STRIDE * 2] = width;
-			__vertexBufferData[VERTEX_BUFFER_STRIDE * 2 + 3] = uvWidth;
-
-			__vertexBufferContext = context.__context;
-			__vertexBuffer = context.createVertexBuffer(3, VERTEX_BUFFER_STRIDE);
-			__vertexBuffer.uploadFromTypedArray(__vertexBufferData);
+			return __vertexBuffer;
 		}
-		#end
 
-		return __vertexBuffer;
-	}
-
-	@:noCompletion private override function __hitTest(x:Float, y:Float, shapeFlag:Bool, stack:Array<DisplayObject>, interactiveOnly:Bool,
-			hitObject:DisplayObject):Bool
-	{
-		if (!hitObject.visible || __isMask) return false;
-		if (mask != null && !mask.__hitTestMask(x, y)) return false;
-
-		__getRenderTransform();
-
-		var px = __renderTransform.__transformInverseX(x, y);
-		var py = __renderTransform.__transformInverseY(x, y);
-
-		if (px > 0 && py > 0 && px <= __width && py <= __height)
+		@:noCompletion private override function __hitTest(x:Float, y:Float, shapeFlag:Bool, stack:Array<DisplayObject>, interactiveOnly:Bool,
+				hitObject:DisplayObject):Bool
 		{
-			if (stack != null && !interactiveOnly)
+			if (!hitObject.visible || __isMask) return false;
+			if (mask != null && !mask.__hitTestMask(x, y)) return false;
+
+			__getRenderTransform();
+
+			var px = __renderTransform.__transformInverseX(x, y);
+			var py = __renderTransform.__transformInverseY(x, y);
+
+			if (px > 0 && py > 0 && px <= __width && py <= __height)
 			{
-				stack.push(hitObject);
+				if (stack != null && !interactiveOnly)
+				{
+					stack.push(hitObject);
+				}
+
+				return true;
 			}
 
-			return true;
+			return false;
 		}
 
-		return false;
-	}
-
-	@:noCompletion private override function __hitTestMask(x:Float, y:Float):Bool
-	{
-		var point = Point.__pool.get();
-		point.setTo(x, y);
-
-		__globalToLocal(point, point);
-
-		var hit = (point.x > 0 && point.y > 0 && point.x <= __width && point.y <= __height);
-
-		Point.__pool.release(point);
-		return hit;
-	}
-
-	// Get & Set Methods
-	@:noCompletion private override function get_height():Float
-	{
-		return __height * scaleY;
-	}
-
-	@:noCompletion private override function set_height(value:Float):Float
-	{
-		if (scaleY != 1 || value != __height)
+		@:noCompletion private override function __hitTestMask(x:Float, y:Float):Bool
 		{
-			__setTransformDirty();
-			__dirty = true;
+			var point = Point.__pool.get();
+			point.setTo(x, y);
+
+			__globalToLocal(point, point);
+
+			var hit = (point.x > 0 && point.y > 0 && point.x <= __width && point.y <= __height);
+
+			Point.__pool.release(point);
+			return hit;
 		}
 
-		scaleY = 1;
-		return __height = value;
-	}
-
-	@:noCompletion private function get_videoHeight():Int
-	{
-		#if (js && html5)
-		if (__stream != null && __stream.__video != null)
+		// Get & Set Methods
+		@:noCompletion private override function get_height():Float
 		{
-			return Std.int(__stream.__video.videoHeight);
+			return __height * scaleY;
 		}
-		#end
 
-		return 0;
-	}
-
-	@:noCompletion private function get_videoWidth():Int
-	{
-		#if (js && html5)
-		if (__stream != null && __stream.__video != null)
+		@:noCompletion private override function set_height(value:Float):Float
 		{
-			return Std.int(__stream.__video.videoWidth);
+			if (scaleY != 1 || value != __height)
+			{
+				__setTransformDirty();
+				__dirty = true;
+			}
+
+			scaleY = 1;
+			return __height = value;
 		}
-		#end
 
-		return 0;
-	}
-
-	@:noCompletion private override function get_width():Float
-	{
-		return __width * __scaleX;
-	}
-
-	@:noCompletion private override function set_width(value:Float):Float
-	{
-		if (__scaleX != 1 || __width != value)
+		@:noCompletion private function get_videoHeight():Int
 		{
-			__setTransformDirty();
-			__dirty = true;
+			#if (js && html5)
+			if (__stream != null && __stream.__video != null)
+			{
+				return Std.int(__stream.__video.videoHeight);
+			}
+			#end
+
+			return 0;
 		}
 
-		scaleX = 1;
-		return __width = value;
-	}
-}
-#else
-typedef Video = flash.media.Video;
-#end
+		@:noCompletion private function get_videoWidth():Int
+		{
+			#if (js && html5)
+			if (__stream != null && __stream.__video != null)
+			{
+				return Std.int(__stream.__video.videoWidth);
+			}
+			#end
+
+			return 0;
+		}
+
+		@:noCompletion private override function get_width():Float
+		{
+			return __width * __scaleX;
+		}
+
+		@:noCompletion private override function set_width(value:Float):Float
+		{
+			if (__scaleX != 1 || __width != value)
+			{
+				__setTransformDirty();
+				__dirty = true;
+			}
+
+			scaleX = 1;
+			return __width = value;
+		}
+		}

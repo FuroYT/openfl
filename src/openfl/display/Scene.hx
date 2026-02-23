@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -18,6 +17,3 @@ package openfl.display;
 		this.numFrames = numFrames;
 	}
 }
-#else
-typedef Scene = flash.display.Scene;
-#end

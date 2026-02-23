@@ -1,6 +1,5 @@
 package openfl.text;
 
-#if !flash
 import openfl.events.EventDispatcher;
 import openfl.text._internal.CSSParser;
 import openfl.utils.Object;
@@ -52,8 +51,20 @@ class StyleSheet extends EventDispatcher /*implements Dynamic*/
 	public var styleNames(get, never):Array<String>;
 
 	@:noCompletion private static var __supportedStyles:Array<String> = [
-		"color", "display", "font-family", "font-size", "font-style", "font-weight", "kerning", "leading", "letter-spacing", "margin-left", "margin-right",
-		"text-align", "text-decoration", "text-indent"
+		"color",
+		"display",
+		"font-family",
+		"font-size",
+		"font-style",
+		"font-weight",
+		"kerning",
+		"leading",
+		"letter-spacing",
+		"margin-left",
+		"margin-right",
+		"text-align",
+		"text-decoration",
+		"text-indent"
 	];
 
 	@:noCompletion private var __styleNames:Array<String>;
@@ -363,6 +374,3 @@ class StyleSheet extends EventDispatcher /*implements Dynamic*/
 		return __styleNames;
 	}
 }
-#else
-typedef StyleSheet = flash.text.StyleSheet;
-#end

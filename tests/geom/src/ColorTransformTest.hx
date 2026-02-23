@@ -38,11 +38,7 @@ class ColorTransformTest extends Test
 	{
 		var base = new ColorTransform(0.1, 0.55, 0.4, 1.0, -255, 5, 255, 0);
 
-		#if flash
-		var color:UInt = 0xFF0105FF;
-		#else
 		var color:Int = 0xFF0105FF;
-		#end
 
 		Assert.equals(color, base.color);
 

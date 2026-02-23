@@ -1,6 +1,5 @@
 package openfl.ui;
 
-#if !flash
 /**
 	The KeyLocation class contains constants that indicate the location of a
 	key pressed on the keyboard or keyboard-like input device.
@@ -8,7 +7,6 @@ package openfl.ui;
 	property.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract KeyLocation(Int) from Int to Int from UInt to UInt
-
 {
 	/**
 		Indicates the key activated is in the left key location (there is more
@@ -39,6 +37,3 @@ package openfl.ui;
 	**/
 	public var STANDARD = 0;
 }
-#else
-typedef KeyLocation = flash.ui.KeyLocation;
-#end

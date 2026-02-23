@@ -12,11 +12,7 @@ class InteractiveObjectTest extends Test
 {
 	public function test_new_()
 	{
-		#if flash
-		var obj = new Sprite();
-		#else
 		var obj = new InteractiveObject();
-		#end
 
 		Assert.isTrue(obj.mouseEnabled);
 
@@ -49,11 +45,7 @@ class InteractiveObjectTest extends Test
 
 	public function test_mouseEnabled()
 	{
-		#if flash
-		var obj = new Sprite();
-		#else
 		var obj = new InteractiveObject();
-		#end
 
 		Assert.isTrue(obj.mouseEnabled);
 
@@ -86,11 +78,7 @@ class InteractiveObjectTest extends Test
 	{
 		var events_no:Int = 0;
 
-		#if flash
-		var obj = new Sprite();
-		#else
 		var obj = new InteractiveObject();
-		#end
 
 		obj.addEventListener(Event.TAB_ENABLED_CHANGE, function(e)
 		{
@@ -99,21 +87,10 @@ class InteractiveObjectTest extends Test
 
 		Assert.isFalse(obj.tabEnabled);
 
-		#if flash
-		obj.buttonMode = true;
-		Assert.isTrue(obj.tabEnabled);
-		#end
-
 		obj.tabEnabled = false;
 		Assert.isFalse(obj.tabEnabled);
 
 		Assert.equals(1, events_no);
-
-		#if flash
-		obj.buttonMode = false;
-		obj.buttonMode = true;
-		Assert.isFalse(obj.tabEnabled);
-		#end
 
 		obj.tabEnabled = true;
 		Assert.isTrue(obj.tabEnabled);
@@ -125,11 +102,7 @@ class InteractiveObjectTest extends Test
 	{
 		var events_no:Int = 0;
 
-		#if flash
-		var obj = new Sprite();
-		#else
 		var obj = new InteractiveObject();
-		#end
 
 		obj.addEventListener(Event.TAB_INDEX_CHANGE, function(e)
 		{
@@ -149,11 +122,7 @@ class InteractiveObjectTest extends Test
 
 	public function test_tabIndexNegativeValueError()
 	{
-		#if flash
-		var obj = new Sprite();
-		#else
 		var obj = new InteractiveObject();
-		#end
 
 		Assert.raises(function():Void
 		{

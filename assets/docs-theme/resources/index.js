@@ -68,8 +68,8 @@ function setPlatform(platform) {
 	var styles = ".platform { display:inherit } ";
 	var platforms = dox.platforms;
 
-	styles += ".package-sys { display:" + ((platform == "Flash" || platform == "HTML5") ? "none" : "inherit") + " } ";
-	styles += ".package-cpp { display:" + ((platform == "Flash" || platform == "HTML5" || platform == "Neko") ? "none" : "inherit") + " } ";
+	styles += ".package-sys { display:" + (platform == "HTML5" ? "none" : "inherit") + " } ";
+	styles += ".package-cpp { display:" + ((platform == "HTML5" || platform == "Neko") ? "none" : "inherit") + " } ";
 	styles += ".package-neko { display:" + ((platform == "Neko" || platform == "all") ? "inherit" : "none") + " } ";
 	styles += ".package-js { display:" + ((platform == "HTML5" || platform == "all") ? "inherit" : "none") + " } ";
 

@@ -12,9 +12,7 @@ class Tests
 		runner.addCase(new FontTypeTest());
 		runner.addCase(new GridFitTypeTest());
 		runner.addCase(new TextFieldAutoSizeTest());
-		#if !flash
 		runner.addCase(new TextFieldRestrictTest());
-		#end
 		runner.addCase(new TextFieldTest());
 		runner.addCase(new TextFieldTypeTest());
 		runner.addCase(new TextFormatAlignTest());

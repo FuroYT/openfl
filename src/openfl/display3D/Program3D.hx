@@ -1,6 +1,5 @@
 package openfl.display3D;
 
-#if !flash
 import openfl.display3D._internal.GLProgram;
 import openfl.display3D._internal.GLShader;
 import openfl.display3D._internal.GLUniformLocation;
@@ -423,10 +422,7 @@ import lime.utils.BytePointer;
 
 		var prefix = "#ifdef GL_ES
 			#ifdef GL_FRAGMENT_PRECISION_HIGH
-			precision highp float;
-			#else
-			precision mediump float;
-			#endif
+			precision highp float;if
 			#endif
 			";
 
@@ -1124,6 +1120,3 @@ import lime.utils.BytePointer;
 		}
 	}
 }
-#else
-typedef Program3D = flash.display3D.Program3D;
-#end

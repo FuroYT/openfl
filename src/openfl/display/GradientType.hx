@@ -1,7 +1,5 @@
 package openfl.display;
 
-#if !flash
-
 #if !openfljs
 /**
 	The GradientType class provides values for the `type` parameter
@@ -10,7 +8,6 @@ package openfl.display;
 	class.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract GradientType(Null<Int>)
-
 {
 	/**
 		Value used to specify a linear gradient fill.
@@ -52,10 +49,8 @@ package openfl.display;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract GradientType(String) from String to String
 
+abstract GradientType(String) from String to String
 {
 	public var LINEAR = "linear";
 	public var RADIAL = "radial";
@@ -70,7 +65,4 @@ package openfl.display;
 		}
 	}
 }
-#end
-#else
-typedef GradientType = flash.display.GradientType;
 #end

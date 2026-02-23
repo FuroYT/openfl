@@ -147,11 +147,9 @@ class Context3DTest extends Test
 
 		if (context3D != null)
 		{
-			#if !flash
 			var exists = context3D.createProgram;
 
 			Assert.notNull(exists);
-			#end
 		}
 		#end
 	}

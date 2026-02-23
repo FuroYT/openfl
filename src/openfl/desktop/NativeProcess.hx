@@ -1,6 +1,6 @@
 package openfl.desktop;
 
-#if (haxe4 && sys && !flash)
+#if (haxe4 && sys)
 import haxe.Json;
 import haxe.Serializer;
 import haxe.io.Bytes;
@@ -50,8 +50,7 @@ import haxe.io.BytesOutput;
 **/
 @:access(openfl.utils.ByteArrayData)
 #if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
+@:fileXml('tags="haxe,release"') @:noDebug
 #end
 class NativeProcess extends EventDispatcher
 {
@@ -863,8 +862,4 @@ private class OutboundPipe implements IDataOutput
 		}
 	}
 }
-#elseif flash
-#if air
-typedef NativeProcess = flash.desktop.NativeProcess;
-#end
 #end

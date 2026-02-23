@@ -1,9 +1,7 @@
 package openfl.globalization;
 
-#if !flash
 #if !openfljs
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract DateTimeNameContext(Null<Int>)
-
 {
 	public var FORMAT = 0;
 	public var STANDALONE = 1;
@@ -38,10 +36,8 @@ package openfl.globalization;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract DateTimeNameContext(String) from String to String
 
+abstract DateTimeNameContext(String) from String to String
 {
 	public var FORMAT = "format";
 	public var STANDALONE = "standalone";
@@ -56,7 +52,4 @@ package openfl.globalization;
 		}
 	}
 }
-#end
-#else
-typedef DateTimeNameContext = flash.globalization.DateTimeNameContext;
 #end

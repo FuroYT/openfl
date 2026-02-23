@@ -21,9 +21,7 @@ class ShaderTest extends Test
 		// TODO: Confirm functionality
 
 		var shader = new Shader();
-		#if !flash
 		shader.byteCode = new ByteArray();
-		#end
 	}
 
 	@Ignored
@@ -34,11 +32,7 @@ class ShaderTest extends Test
 		// var shader = new Shader ();
 		// var exists = shader.data;
 
-		// #if flash
-		// Assert.isNull (exists);
-		// #else
 		// Assert.notNull (exists);
-		// #end
 	}
 
 	public function test_precisionHint()

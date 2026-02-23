@@ -71,7 +71,7 @@ class LoaderInfoTest extends Test
 	@Ignored
 	public function test_frameRate()
 	{
-		#if !flash // throws error until certain types of content are loaded
+		// throws error until certain types of content are loaded
 
 		// TODO: Confirm functionality
 
@@ -79,13 +79,12 @@ class LoaderInfoTest extends Test
 		var exists = loader.contentLoaderInfo.frameRate;
 
 		// Assert.notNull (exists);
-		#end
 	}
 
 	@Ignored
 	public function test_height()
 	{
-		#if !flash // throws error until certain types of content are loaded
+		// throws error until certain types of content are loaded
 
 		// TODO: Confirm functionality
 
@@ -93,7 +92,6 @@ class LoaderInfoTest extends Test
 		var exists = loader.contentLoaderInfo.height;
 
 		// Assert.notNull (exists);
-		#end
 	}
 
 	public function test_loader()
@@ -131,7 +129,7 @@ class LoaderInfoTest extends Test
 	@Ignored
 	public function test_parentAllowsChild()
 	{
-		#if !flash // throws error until certain types of content are loaded
+		// throws error until certain types of content are loaded
 
 		// TODO: Confirm functionality
 
@@ -139,13 +137,12 @@ class LoaderInfoTest extends Test
 		var exists = loader.contentLoaderInfo.parentAllowsChild;
 
 		// Assert.notNull (exists);
-		#end
 	}
 
 	@Ignored
 	public function test_sameDomain()
 	{
-		#if !flash // throws error until certain types of content are loaded
+		// throws error until certain types of content are loaded
 
 		// TODO: Confirm functionality
 
@@ -153,7 +150,6 @@ class LoaderInfoTest extends Test
 		var exists = loader.contentLoaderInfo.sameDomain;
 
 		// Assert.notNull (exists);
-		#end
 	}
 
 	@Ignored
@@ -180,7 +176,7 @@ class LoaderInfoTest extends Test
 	@Ignored
 	public function test_width()
 	{
-		#if !flash // throws error until certain types of content are loaded
+		// throws error until certain types of content are loaded
 
 		// TODO: Confirm functionality
 
@@ -188,6 +184,5 @@ class LoaderInfoTest extends Test
 		var exists = loader.contentLoaderInfo.width;
 
 		// Assert.notNull (exists);
-		#end
 	}
 }

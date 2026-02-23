@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import haxe.io.Path;
 import openfl.errors.Error;
 import openfl.events.Event;
@@ -695,151 +694,144 @@ class Loader extends DisplayObjectContainer
 		{
 			#if cpp
 			cpp.vm.Gc.run(false);
-			#elseif neko
-			neko.vm.Gc.run(false);
-			#end
-		}
-	}
+			}} @:noCompletion private function __dispatchError(text:String):Void
 
-	@:noCompletion private function __dispatchError(text:String):Void
-	{
-		var event = new IOErrorEvent(IOErrorEvent.IO_ERROR);
-		event.text = text;
-		contentLoaderInfo.dispatchEvent(event);
-	}
-
-	@:noCompletion private function __setContent(content:DisplayObject, width:Int, height:Int):Void
-	{
-		this.content = content;
-
-		contentLoaderInfo.content = content;
-		contentLoaderInfo.width = width;
-		contentLoaderInfo.height = height;
-
-		if (content != null)
-		{
-			super.addChildAt(content, 0);
-		}
-	}
-
-	// Event Handlers
-
-	@SuppressWarnings("checkstyle:Dynamic")
-	@:noCompletion private function BitmapData_onError(error:Dynamic):Void
-	{
-		// TODO: Dispatch HTTPStatusEvent
-
-		__dispatchError(Std.string(error));
-	}
-
-	@:noCompletion private function BitmapData_onLoad(bitmapData:BitmapData):Void
-	{
-		// TODO: Dispatch HTTPStatusEvent
-
-		if (bitmapData == null)
-		{
-			__dispatchError("Unknown error");
-			return;
-		}
-
-		__setContent(new Bitmap(bitmapData), bitmapData.width, bitmapData.height);
-
-		contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
-	}
-
-	@:noCompletion private function BitmapData_onProgress(bytesLoaded:Int, bytesTotal:Int):Void
-	{
-		var event = new ProgressEvent(ProgressEvent.PROGRESS);
-		event.bytesLoaded = bytesLoaded;
-		event.bytesTotal = bytesTotal;
-		contentLoaderInfo.dispatchEvent(event);
-	}
-
-	@:noCompletion private function loader_onComplete(event:Event):Void
-	{
-		// TODO: Dispatch HTTPStatusEvent
-
-		var loader:URLLoader = cast event.target;
-
-		#if lime
-		if (contentLoaderInfo.contentType != null && contentLoaderInfo.contentType.indexOf("/json") > -1)
-		{
-			var manifest = AssetManifest.parse(loader.data, Path.directory(__path));
-
-			if (manifest == null)
 			{
-				__dispatchError("Cannot parse asset manifest");
-				return;
+				var event = new IOErrorEvent(IOErrorEvent.IO_ERROR);
+				event.text = text;
+				contentLoaderInfo.dispatchEvent(event);
 			}
 
-			var library = LimeAssetLibrary.fromManifest(manifest);
-
-			if (library == null)
+			@:noCompletion private function __setContent(content:DisplayObject, width:Int, height:Int):Void
 			{
-				__dispatchError("Cannot open library");
-				return;
-			}
+				this.content = content;
 
-			if ((library is AssetLibrary))
-			{
-				library.load().onComplete(function(_)
+				contentLoaderInfo.content = content;
+				contentLoaderInfo.width = width;
+				contentLoaderInfo.height = height;
+
+				if (content != null)
 				{
-					__library = cast library;
-					Assets.registerLibrary(contentLoaderInfo.url, __library);
+					super.addChildAt(content, 0);
+				}
+			}
 
-					if (manifest.name != null && !Assets.hasLibrary(manifest.name))
+			// Event Handlers
+
+			@SuppressWarnings("checkstyle:Dynamic")
+			@:noCompletion private function BitmapData_onError(error:Dynamic):Void
+			{
+				// TODO: Dispatch HTTPStatusEvent
+
+				__dispatchError(Std.string(error));
+			}
+
+			@:noCompletion private function BitmapData_onLoad(bitmapData:BitmapData):Void
+			{
+				// TODO: Dispatch HTTPStatusEvent
+
+				if (bitmapData == null)
+				{
+					__dispatchError("Unknown error");
+					return;
+				}
+
+				__setContent(new Bitmap(bitmapData), bitmapData.width, bitmapData.height);
+
+				contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+			}
+
+			@:noCompletion private function BitmapData_onProgress(bytesLoaded:Int, bytesTotal:Int):Void
+			{
+				var event = new ProgressEvent(ProgressEvent.PROGRESS);
+				event.bytesLoaded = bytesLoaded;
+				event.bytesTotal = bytesTotal;
+				contentLoaderInfo.dispatchEvent(event);
+			}
+
+			@:noCompletion private function loader_onComplete(event:Event):Void
+			{
+				// TODO: Dispatch HTTPStatusEvent
+
+				var loader:URLLoader = cast event.target;
+
+				#if lime
+				if (contentLoaderInfo.contentType != null && contentLoaderInfo.contentType.indexOf("/json") > -1)
+				{
+					var manifest = AssetManifest.parse(loader.data, Path.directory(__path));
+
+					if (manifest == null)
 					{
-						Assets.registerLibrary(manifest.name, __library);
+						__dispatchError("Cannot parse asset manifest");
+						return;
 					}
 
-					var clip = __library.getMovieClip("");
-					__setContent(clip, Std.int(clip.width), Std.int(clip.height));
+					var library = LimeAssetLibrary.fromManifest(manifest);
+
+					if (library == null)
+					{
+						__dispatchError("Cannot open library");
+						return;
+					}
+
+					if ((library is AssetLibrary))
+					{
+						library.load().onComplete(function(_)
+						{
+							__library = cast library;
+							Assets.registerLibrary(contentLoaderInfo.url, __library);
+
+							if (manifest.name != null && !Assets.hasLibrary(manifest.name))
+							{
+								Assets.registerLibrary(manifest.name, __library);
+							}
+
+							var clip = __library.getMovieClip("");
+							__setContent(clip, Std.int(clip.width), Std.int(clip.height));
+
+							contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
+						}).onError(function(e)
+						{
+								__dispatchError(e);
+						});
+					}
+				}
+				else
+				#end
+				if (contentLoaderInfo.contentType != null
+					&& (contentLoaderInfo.contentType.indexOf("/javascript") > -1
+						|| contentLoaderInfo.contentType.indexOf("/ecmascript") > -1))
+				{
+					__setContent(new Sprite(), 0, 0);
+
+					#if (js && html5)
+					// var script:ScriptElement = cast Browser.document.createElement ("script");
+					// script.innerHTML = loader.data;
+					// Browser.document.head.appendChild (script);
+
+					untyped #if haxe4 js.Syntax.code #else __js__ #end ("eval")("(function () {" + loader.data + "})()");
+					#end
 
 					contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
-				}).onError(function(e)
+				}
+				else
 				{
-						__dispatchError(e);
-				});
+					contentLoaderInfo.bytes = loader.data;
+					BitmapData.loadFromBytes(loader.data).onComplete(BitmapData_onLoad).onError(BitmapData_onError);
+				}
 			}
-		}
-		else
-		#end
-		if (contentLoaderInfo.contentType != null
-			&& (contentLoaderInfo.contentType.indexOf("/javascript") > -1 || contentLoaderInfo.contentType.indexOf("/ecmascript") > -1))
-		{
-			__setContent(new Sprite(), 0, 0);
 
-			#if (js && html5)
-			// var script:ScriptElement = cast Browser.document.createElement ("script");
-			// script.innerHTML = loader.data;
-			// Browser.document.head.appendChild (script);
+			@:noCompletion private function loader_onError(event:IOErrorEvent):Void
+			{
+				// TODO: Dispatch HTTPStatusEvent
 
-			untyped #if haxe4 js.Syntax.code #else __js__ #end ("eval")("(function () {" + loader.data + "})()");
-			#end
+				event.target = contentLoaderInfo;
+				contentLoaderInfo.dispatchEvent(event);
+			}
 
-			contentLoaderInfo.dispatchEvent(new Event(Event.COMPLETE));
-		}
-		else
-		{
-			contentLoaderInfo.bytes = loader.data;
-			BitmapData.loadFromBytes(loader.data).onComplete(BitmapData_onLoad).onError(BitmapData_onError);
-		}
-	}
-
-	@:noCompletion private function loader_onError(event:IOErrorEvent):Void
-	{
-		// TODO: Dispatch HTTPStatusEvent
-
-		event.target = contentLoaderInfo;
-		contentLoaderInfo.dispatchEvent(event);
-	}
-
-	@:noCompletion private function loader_onProgress(event:ProgressEvent):Void
-	{
-		event.target = contentLoaderInfo;
-		contentLoaderInfo.dispatchEvent(event);
-	}
-}
-#else
-typedef Loader = flash.display.Loader;
-#end
+			@:noCompletion private function loader_onProgress(event:ProgressEvent):Void
+			{
+				event.target = contentLoaderInfo;
+				contentLoaderInfo.dispatchEvent(event);
+			}
+			}

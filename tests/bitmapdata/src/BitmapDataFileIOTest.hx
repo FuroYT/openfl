@@ -9,9 +9,6 @@ import utest.Test;
 class BitmapDataFileIOTest extends Test
 {
 	// ByteArray.loadFromFile and BitmapData.fromBase64 don't exist on flash target
-	#if flash
-	@Ignored
-	#end
 	public function test_BitmapData_fromBase64(async:Async)
 	{
 		ByteArray.loadFromFile("openfl-base64.txt").onComplete(function(logoBytes)

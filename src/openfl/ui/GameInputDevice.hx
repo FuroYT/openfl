@@ -1,6 +1,5 @@
 package openfl.ui;
 
-#if !flash
 import openfl.utils.ByteArray;
 #if lime
 import lime.ui.Gamepad;
@@ -133,6 +132,3 @@ import lime.ui.Gamepad;
 		return __controls.length;
 	}
 }
-#else
-typedef GameInputDevice = flash.ui.GameInputDevice;
-#end

@@ -1,6 +1,5 @@
 package openfl.display3D;
 
-#if !flash
 #if !openfljs
 #if cs
 import openfl.utils._internal.NullUtils;
@@ -12,7 +11,6 @@ import openfl.utils._internal.NullUtils;
 	A stencil action specifies how the values in the stencil buffer should be changed.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DStencilAction(Null<Int>)
-
 {
 	/**
 		Decrement the stencil buffer value, clamping at 0, the minimum value.
@@ -105,10 +103,8 @@ import openfl.utils._internal.NullUtils;
 	}
 	#end
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract Context3DStencilAction(String) from String to String
 
+abstract Context3DStencilAction(String) from String to String
 {
 	public var DECREMENT_SATURATE = "decrementSaturate";
 	public var DECREMENT_WRAP = "decrementWrap";
@@ -119,7 +115,4 @@ import openfl.utils._internal.NullUtils;
 	public var SET = "set";
 	public var ZERO = "zero";
 }
-#end
-#else
-typedef Context3DStencilAction = flash.display3D.Context3DStencilAction;
 #end

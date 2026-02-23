@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.CanvasBitmap;
 import openfl.display._internal.CanvasBitmapData;
 import openfl.display._internal.CanvasDisplayObject;
@@ -303,6 +302,3 @@ class CanvasRenderer extends DisplayObjectRenderer
 		}
 	}
 }
-#else
-typedef CanvasRenderer = Dynamic;
-#end

@@ -1,6 +1,5 @@
 package openfl.display3D.textures;
 
-#if !flash
 import haxe.Timer;
 import openfl.display3D._internal.GLTexture;
 import openfl.events.Event;
@@ -174,17 +173,10 @@ import openfl.net.NetStream;
 		#if openfl_pool_events
 		event = Event.__pool.get();
 		event.type = Event.TEXTURE_READY;
-		#else
-		event = new Event(Event.TEXTURE_READY);
-		#end
 
 		dispatchEvent(event);
 
 		#if openfl_pool_events
 		Event.__pool.release(event);
 		#end
-	}
-}
-#else
-typedef VideoTexture = flash.display3D.textures.VideoTexture;
-#end
+		}}

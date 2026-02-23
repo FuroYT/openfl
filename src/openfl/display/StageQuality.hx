@@ -1,14 +1,11 @@
 package openfl.display;
 
-#if !flash
-
 #if !openfljs
 /**
 	The StageQuality class provides values for the `Stage.quality`
 	property.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract StageQuality(Null<Int>)
-
 {
 	/**
 		Specifies very high rendering quality: graphics are anti-aliased using a 4
@@ -59,17 +56,12 @@ package openfl.display;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract StageQuality(String) from String to String
 
+abstract StageQuality(String) from String to String
 {
 	public var BEST = "best";
 	public var HIGH = "high";
 	public var LOW = "low";
 	public var MEDIUM = "medium";
 }
-#end
-#else
-typedef StageQuality = flash.display.StageQuality;
 #end

@@ -16,9 +16,6 @@ class LoaderContextTest extends Test
 		Assert.notEquals(exists, null);
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_allowLoadBytesCodeExecution()
 	{
 		// not available in Linux Flash Player

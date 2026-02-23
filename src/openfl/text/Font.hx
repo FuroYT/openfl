@@ -1,6 +1,5 @@
 package openfl.text;
 
-#if !flash
 import openfl.utils.Assets;
 import openfl.utils.ByteArray;
 import openfl.utils.Future;
@@ -124,198 +123,191 @@ class Font #if lime extends LimeFont #end
 
 		#if lime_cffi
 		return (font.src != null) ? font : null;
-		#else
-		return font;
-		#end
-	}
+		} /**
+			Creates a new Font from a file path synchronously. This means that the
+			Font will be returned immediately (if supported).
 
-	/**
-		Creates a new Font from a file path synchronously. This means that the
-		Font will be returned immediately (if supported).
+			@param	path	A local file path containing a font
+			@returns	A new Font if successful, or `null` if unsuccessful
+		**/
 
-		@param	path	A local file path containing a font
-		@returns	A new Font if successful, or `null` if unsuccessful
-	**/
-	public static function fromFile(path:String):Font
-	{
-		if (path == null) return null;
-
-		var font = new Font();
-		#if lime
-		font.__fromFile(path);
-		#end
-
-		#if lime_cffi
-		return (font.src != null) ? font : null;
-		#else
-		return font;
-		#end
-	}
-
-	#if false
-	/**
-		Specifies whether a provided string can be displayed using the
-		currently assigned font.
-
-		@param str The string to test against the current font.
-		@return A value of `true` if the specified string can be fully
-				displayed using this font.
-	**/
-	// @:noCompletion @:dox(hide) public function hasGlyphs (str:String):Bool;
-	#end
-
-	/**
-		Creates a new Font from haxe.io.Bytes or openfl.utils.ByteArray data
-		asynchronously. The font decoding will occur in the background.
-		Progress, completion and error callbacks will be dispatched in the current
-		thread using callbacks attached to a returned Future object.
-
-		@param	bytes	A haxe.io.Bytes or openfl.utils.ByteArray instance
-		@returns	A Future Font
-	**/
-	public static function loadFromBytes(bytes:ByteArray):Future<Font>
-	{
-		#if lime
-		return LimeFont.loadFromBytes(bytes).then(function(limeFont)
+		public static function fromFile(path:String):Font
 		{
+			if (path == null) return null;
+
 			var font = new Font();
-			font.__fromLimeFont(limeFont);
+			#if lime
+			font.__fromFile(path);
+			#end
 
-			return Future.withValue(font);
-		});
-		#else
-		return cast Future.withError("Cannot load font from bytes");
-		#end
-	}
-
-	/**
-		Creates a new Font from a file path or web address asynchronously. The file
-		load and font decoding will occur in the background.
-		Progress, completion and error callbacks will be dispatched in the current
-		thread using callbacks attached to a returned Future object.
-
-		@param	path	A local file path or web address containing a font
-		@returns	A Future Font
-	**/
-	public static function loadFromFile(path:String):Future<Font>
-	{
-		#if lime
-		return LimeFont.loadFromFile(path).then(function(limeFont)
-		{
-			var font = new Font();
-			font.__fromLimeFont(limeFont);
-
-			return Future.withValue(font);
-		});
-		#else
-		return cast Future.withError("Cannot load font from file");
-		#end
-	}
-
-	/**
-		Creates a new Font from a font name asynchronously. This feature should work
-		for embedded CSS fonts on the HTML5 target, but is not implemented for
-		registered OS fonts on native targets currently. The file
-		load and font decoding will occur in the background.
-		Progress, completion and error callbacks will be dispatched in the current
-		thread using callbacks attached to a returned Future object.
-
-		@param	path	A font name
-		@returns	A Future Font
-	**/
-	public static function loadFromName(path:String):Future<Font>
-	{
-		#if lime
-		return LimeFont.loadFromName(path).then(function(limeFont)
-		{
-			var font = new Font();
-			font.__fromLimeFont(limeFont);
-
-			return Future.withValue(font);
-		});
-		#else
-		return cast Future.withError("Cannot load font from name");
-		#end
-	}
-
-	/**
-		Registers a font in the global font list.
-
-	**/
-	public static function registerFont(font:Dynamic):Void
-	{
-		var instance:Font = null;
-
-		if (Type.getClass(font) == null)
-		{
-			instance = cast(Type.createInstance(font, []), Font);
-		}
-		else
-		{
-			instance = cast(font, Font);
+			#if lime_cffi
+			return (font.src != null) ? font : null;
+			#else
+			return font;
+			#end
 		}
 
-		if (instance != null)
+		#if false
+		/**
+			Specifies whether a provided string can be displayed using the
+			currently assigned font.
+
+			@param str The string to test against the current font.
+			@return A value of `true` if the specified string can be fully
+					displayed using this font.
+		**/
+		// @:noCompletion @:dox(hide) public function hasGlyphs (str:String):Bool;
+		#end
+
+		/**
+			Creates a new Font from haxe.io.Bytes or openfl.utils.ByteArray data
+			asynchronously. The font decoding will occur in the background.
+			Progress, completion and error callbacks will be dispatched in the current
+			thread using callbacks attached to a returned Future object.
+
+			@param	bytes	A haxe.io.Bytes or openfl.utils.ByteArray instance
+			@returns	A Future Font
+		**/
+		public static function loadFromBytes(bytes:ByteArray):Future<Font>
 		{
-			/*if (Reflect.hasField (font, "resourceName")) {
-
-				instance.fontName = __ofResource (Reflect.field (font, "resourceName"));
-
-			}*/
-
-			__registeredFonts.push(instance);
-			__fontByName[instance.fontName] = instance;
-		}
-	}
-
-	#if lime
-	@:noCompletion private function __fromLimeFont(font:LimeFont):Void
-	{
-		__copyFrom(font);
-	}
-	#end
-
-	@:noCompletion private function __initialize():Bool
-	{
-		#if native
-		if (!__initialized)
-		{
-			if (src != null)
+			#if lime
+			return LimeFont.loadFromBytes(bytes).then(function(limeFont)
 			{
-				// TODO: How does src get defined without being initialized in Lime?
-				if (unitsPerEM == 0) __initializeSource();
-				__initialized = true;
+				var font = new Font();
+				font.__fromLimeFont(limeFont);
+
+				return Future.withValue(font);
+			});
+			#else
+			return cast Future.withError("Cannot load font from bytes");
+			#end
+		}
+
+		/**
+			Creates a new Font from a file path or web address asynchronously. The file
+			load and font decoding will occur in the background.
+			Progress, completion and error callbacks will be dispatched in the current
+			thread using callbacks attached to a returned Future object.
+
+			@param	path	A local file path or web address containing a font
+			@returns	A Future Font
+		**/
+		public static function loadFromFile(path:String):Future<Font>
+		{
+			#if lime
+			return LimeFont.loadFromFile(path).then(function(limeFont)
+			{
+				var font = new Font();
+				font.__fromLimeFont(limeFont);
+
+				return Future.withValue(font);
+			});
+			#else
+			return cast Future.withError("Cannot load font from file");
+			#end
+		}
+
+		/**
+			Creates a new Font from a font name asynchronously. This feature should work
+			for embedded CSS fonts on the HTML5 target, but is not implemented for
+			registered OS fonts on native targets currently. The file
+			load and font decoding will occur in the background.
+			Progress, completion and error callbacks will be dispatched in the current
+			thread using callbacks attached to a returned Future object.
+
+			@param	path	A font name
+			@returns	A Future Font
+		**/
+		public static function loadFromName(path:String):Future<Font>
+		{
+			#if lime
+			return LimeFont.loadFromName(path).then(function(limeFont)
+			{
+				var font = new Font();
+				font.__fromLimeFont(limeFont);
+
+				return Future.withValue(font);
+			});
+			#else
+			return cast Future.withError("Cannot load font from name");
+			#end
+		}
+
+		/**
+			Registers a font in the global font list.
+
+		**/
+		public static function registerFont(font:Dynamic):Void
+		{
+			var instance:Font = null;
+
+			if (Type.getClass(font) == null)
+			{
+				instance = cast(Type.createInstance(font, []), Font);
 			}
-			else if (src == null && __fontID != null && Assets.isLocal(__fontID))
+			else
 			{
-				__fromBytes(Assets.getBytes(__fontID));
-				__initialized = true;
+				instance = cast(font, Font);
+			}
+
+			if (instance != null)
+			{
+				/*if (Reflect.hasField (font, "resourceName")) {
+
+					instance.fontName = __ofResource (Reflect.field (font, "resourceName"));
+
+				}*/
+
+				__registeredFonts.push(instance);
+				__fontByName[instance.fontName] = instance;
 			}
 		}
-		#end
 
-		return __initialized;
-	}
-
-	// Get & Set Methods
-	@:noCompletion private inline function get_fontName():String
-	{
 		#if lime
-		return name;
-		#else
-		return null;
+		@:noCompletion private function __fromLimeFont(font:LimeFont):Void
+		{
+			__copyFrom(font);
+		}
 		#end
-	}
 
-	@:noCompletion private inline function set_fontName(value:String):String
-	{
-		#if lime
-		return name = value;
-		#else
-		return value;
-		#end
-	}
-}
-#else
-typedef Font = flash.text.Font;
-#end
+		@:noCompletion private function __initialize():Bool
+		{
+			#if native
+			if (!__initialized)
+			{
+				if (src != null)
+				{
+					// TODO: How does src get defined without being initialized in Lime?
+					if (unitsPerEM == 0) __initializeSource();
+					__initialized = true;
+				}
+				else if (src == null && __fontID != null && Assets.isLocal(__fontID))
+				{
+					__fromBytes(Assets.getBytes(__fontID));
+					__initialized = true;
+				}
+			}
+			#end
+
+			return __initialized;
+		}
+
+		// Get & Set Methods
+		@:noCompletion private inline function get_fontName():String
+		{
+			#if lime
+			return name;
+			#else
+			return null;
+			#end
+		}
+
+		@:noCompletion private inline function set_fontName(value:String):String
+		{
+			#if lime
+			return name = value;
+			#else
+			return value;
+			#end
+		}
+		}

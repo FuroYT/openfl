@@ -1,6 +1,5 @@
 package openfl.net;
 
-#if !flash
 import haxe.io.Bytes;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
@@ -429,6 +428,3 @@ class URLLoader extends EventDispatcher
 		dispatchEvent(event);
 	}
 }
-#else
-typedef URLLoader = flash.net.URLLoader;
-#end

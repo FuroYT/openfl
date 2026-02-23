@@ -1,6 +1,5 @@
 package openfl.events;
 
-#if !flash
 // import openfl.utils.ObjectPool;
 import openfl.ui.GameInputDevice;
 
@@ -63,6 +62,3 @@ import openfl.ui.GameInputDevice;
 		device = null;
 	}
 }
-#else
-typedef GameInputEvent = flash.events.GameInputEvent;
-#end

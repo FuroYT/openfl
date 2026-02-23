@@ -1,8 +1,6 @@
 package openfl.events;
 
-#if !flash
 // import openfl.utils.ObjectPool;
-
 /**
 	An object dispatches a TextEvent object when a user enters text in a text
 	field or clicks a hyperlink in an HTML-enabled text field. There are two
@@ -105,6 +103,3 @@ class TextEvent extends Event
 		text = "";
 	}
 }
-#else
-typedef TextEvent = flash.events.TextEvent;
-#end

@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.GraphicsDataType;
 import openfl.display._internal.GraphicsFillType;
 import openfl.geom.Matrix;
@@ -204,6 +203,3 @@ import openfl.geom.Matrix;
 		this.__graphicsFillType = GRADIENT_FILL;
 	}
 }
-#else
-typedef GraphicsGradientFill = flash.display.GraphicsGradientFill;
-#end

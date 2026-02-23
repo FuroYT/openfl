@@ -5,7 +5,7 @@ class Tests
 {
 	public static function main()
 	{
-		#if (!flash && lime)
+		#if lime
 		openfl.utils._internal.Lib.current = openfl.Lib.current;
 		#end
 

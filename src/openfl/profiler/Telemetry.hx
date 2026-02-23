@@ -1,6 +1,5 @@
 package openfl.profiler;
 
-#if !flash
 #if ((cpp || neko) && hxtelemetry && !macro)
 import hxtelemetry.HxTelemetry;
 #end
@@ -170,29 +169,20 @@ import openfl.utils._internal.Lib;
 	{
 		#if ((cpp || neko) && hxtelemetry && !macro)
 		return telemetry.unwind_stack();
-		#else
-		return "";
-		#end
-	}
+		} // Get & Set Methods
 
-	// Get & Set Methods
-	@:noCompletion private static function get_connected():Bool
-	{
-		#if ((cpp || neko) && hxtelemetry && !macro)
-		return true;
-		#else
-		return false;
-		#end
-	}
-}
+		@:noCompletion private static function get_connected():Bool
+		{
+			#if ((cpp || neko) && hxtelemetry && !macro)
+			return true;
+			#else
+			return false;
+			#end
+		}
+		} @SuppressWarnings("checkstyle:FieldDocComment")
+		@:noCompletion @:dox(hide) #if (haxe_ver >= 4.0) enum #else @:enum #end abstract TelemetryCommandName(String) from String to String
 
-@SuppressWarnings("checkstyle:FieldDocComment")
-@:noCompletion @:dox(hide) #if (haxe_ver >= 4.0) enum #else @:enum #end abstract TelemetryCommandName(String) from String to String
-
-{
-	public var EVENT = ".event";
-	public var RENDER = ".render";
-}
-#else
-typedef Telemetry = flash.profiler.Telemetry;
-#end
+		{
+			public var EVENT = ".event";
+			public var RENDER = ".render";
+		}

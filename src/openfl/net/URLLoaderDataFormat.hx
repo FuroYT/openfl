@@ -1,14 +1,11 @@
 package openfl.net;
 
-#if !flash
-
 #if !openfljs
 /**
 	The URLLoaderDataFormat class provides values that specify how downloaded
 	data is received.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract URLLoaderDataFormat(Null<Int>)
-
 {
 	/**
 		Specifies that downloaded data is received as raw binary data.
@@ -47,16 +44,11 @@ package openfl.net;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract URLLoaderDataFormat(String) from String to String
 
+abstract URLLoaderDataFormat(String) from String to String
 {
 	public var BINARY = "binary";
 	public var TEXT = "text";
 	public var VARIABLES = "variables";
 }
-#end
-#else
-typedef URLLoaderDataFormat = flash.net.URLLoaderDataFormat;
 #end

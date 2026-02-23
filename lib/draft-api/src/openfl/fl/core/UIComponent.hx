@@ -73,47 +73,6 @@ class UIComponent extends XFLSprite
 		return enabled;
 	}
 
-	#if flash
-	@:getter(scaleX) public function get_scaleX():Float
-	{
-		return 1.0;
-	}
-
-	@:setter(scaleX) public function set_scaleX(_scaleX:Float):Void
-	{
-		setSize(_originalWidth * _scaleX, _height);
-	}
-
-	@:getter(scaleY) public function get_scaleY():Float
-	{
-		return 1.0;
-	}
-
-	@:setter(scaleY) function set_scaleY(_scaleY:Float):Void
-	{
-		setSize(_width, _originalHeight * _scaleY);
-	}
-
-	@:getter(width) public function get_width():Float
-	{
-		return _width;
-	}
-
-	@:setter(width) public function set_width(_width:Float)
-	{
-		setSize(_width, _height);
-	}
-
-	@:getter(height) public function get_height():Float
-	{
-		return _height;
-	}
-
-	@:setter(height) public function set_height(_height:Float)
-	{
-		setSize(_width, _height);
-	}
-	#else
 	public override function get_scaleX():Float
 	{
 		return 1.0;
@@ -157,7 +116,6 @@ class UIComponent extends XFLSprite
 		setSize(_width, _height);
 		return _height;
 	}
-	#end
 
 	private function draw():Void {}
 

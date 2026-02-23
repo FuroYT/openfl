@@ -631,8 +631,4 @@ abstract Object(ObjectType) from ObjectType from Dynamic to Dynamic
 typedef Iterator_<T> = cs.internal.Iterator<T>;
 typedef Iterable_<T> = cs.internal.Iterator.Iterable<T>;
 #end
-#if !flash
 @:dox(hide) @:noCompletion typedef ObjectType = Dynamic;
-#else
-@:dox(hide) typedef ObjectType = flash.utils.Object;
-#end

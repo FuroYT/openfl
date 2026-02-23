@@ -10,10 +10,8 @@
 # -lib openfl
 # --no-output
 
--xml xml/Flash.xml
 -cpp obj/docs
 -D display
--D flash_doc_gen
 -D openfl_doc_gen
 -D doc_gen
 ImportAll
@@ -27,7 +25,6 @@ ImportAll
 -cpp obj/docs
 -D display
 -D air_doc_gen
--D flash_doc_gen
 -D openfl_doc_gen
 -D doc_gen
 ImportAll

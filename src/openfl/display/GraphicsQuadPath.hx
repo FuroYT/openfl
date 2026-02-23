@@ -1,8 +1,6 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.GraphicsDataType;
-#end
 import openfl.Vector;
 
 /**
@@ -47,9 +45,7 @@ import openfl.Vector;
 	**/
 	public var transforms:Vector<Float>;
 
-	#if !flash
 	@:noCompletion private var __graphicsDataType(default, null):GraphicsDataType;
-	#end
 
 	/**
 		Creates a new GraphicsTrianglePath object.
@@ -67,8 +63,6 @@ import openfl.Vector;
 		this.indices = indices;
 		this.transforms = transforms;
 
-		#if !flash
 		__graphicsDataType = QUAD_PATH;
-		#end
 	}
 }

@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 /**
 	This class is used to create lightweight shapes using the ActionScript
 	drawing application program interface(API). The Shape class includes a
@@ -58,6 +57,3 @@ class Shape extends DisplayObject
 		return __graphics;
 	}
 }
-#else
-typedef Shape = flash.display.Shape;
-#end

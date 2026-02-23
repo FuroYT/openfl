@@ -1,6 +1,6 @@
 package openfl.desktop;
 
-#if (haxe4 && sys && !flash)
+#if (haxe4 && sys)
 import openfl.Vector;
 import openfl.filesystem.File;
 
@@ -55,8 +55,4 @@ class NativeProcessStartupInfo
 	**/
 	public var workingDirectory:File;
 }
-#else
-#if air
-typedef NativeProcessStartupInfo = flash.desktop.NativeProcessStartupInfo;
-#end
 #end

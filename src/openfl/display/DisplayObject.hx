@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.IBitmapDrawableType;
 import openfl.utils.ObjectPool;
 import openfl.utils._internal.Lib;
@@ -643,7 +642,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var rotationX:Float;
 	#end
-
 	#if false
 	/**
 		Indicates the y-axis rotation of the DisplayObject instance, in degrees, from its original orientation
@@ -653,7 +651,6 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var rotationY:Float;
 	#end
-
 	#if false
 	/**
 		Indicates the z-axis rotation of the DisplayObject instance, in degrees, from its original orientation
@@ -2348,6 +2345,3 @@ class DisplayObject extends EventDispatcher implements IBitmapDrawable #if (open
 		return __transform.ty = value;
 	}
 }
-#else
-typedef DisplayObject = flash.display.DisplayObject;
-#end

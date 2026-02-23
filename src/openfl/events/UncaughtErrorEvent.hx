@@ -1,8 +1,6 @@
 package openfl.events;
 
-#if !flash
 // import openfl.utils.ObjectPool;
-
 /**
 	An UncaughtErrorEvent object is dispatched by an instance of the
 	UncaughtErrorEvents class when an uncaught error occurs. An uncaught error
@@ -202,6 +200,3 @@ class UncaughtErrorEvent extends ErrorEvent
 		error = null;
 	}
 }
-#else
-typedef UncaughtErrorEvent = flash.events.UncaughtErrorEvent;
-#end

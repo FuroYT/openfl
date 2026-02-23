@@ -1,6 +1,5 @@
 package openfl.ui;
 
-#if !flash
 #if lime
 import lime.ui.KeyCode;
 #end
@@ -959,6 +958,3 @@ import lime.ui.KeyCode;
 	}
 	#end
 }
-#else
-typedef Keyboard = flash.ui.Keyboard;
-#end

@@ -1,6 +1,5 @@
 package openfl.events;
 
-#if !flash
 import openfl.utils.Object;
 #if openfl_pool_events
 import openfl.utils.ObjectPool;
@@ -920,6 +919,3 @@ class Event
 		__preventDefault = false;
 	}
 }
-#else
-typedef Event = flash.events.Event;
-#end

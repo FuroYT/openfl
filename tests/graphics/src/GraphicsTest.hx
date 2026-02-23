@@ -22,54 +22,40 @@ class GraphicsTest extends Test
 		Assert.notNull(graphics);
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_beginBitmapFill()
 	{
 		// TODO: Confirm functionality
 
-		#if !flash
 		var shape = new Shape();
 		var graphics = shape.graphics;
 		var exists = graphics.beginBitmapFill;
 
 		Assert.notNull(exists);
-		#end
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_beginFill()
 	{
 		// TODO: Confirm functionality
 
-		#if !flash
 		var shape = new Shape();
 		var graphics = shape.graphics;
 		var exists = graphics.beginFill;
 
 		Assert.notNull(exists);
-		#end
 	}
 
-	#if (flash || neko)
+	#if neko
 	@Ignored
 	#end
 	public function test_beginGradientFill()
 	{
 		// TODO: Confirm functionality
 
-		#if !flash
 		var shape = new Shape();
 		var graphics = shape.graphics;
-		#if !neko
 		var exists = graphics.beginGradientFill;
 
 		Assert.notNull(exists);
-		#end
-		#end
 	}
 
 	public function test_clear()
@@ -116,20 +102,15 @@ class GraphicsTest extends Test
 		Assert.notNull(exists);
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_drawGraphicsData()
 	{
 		// TODO: Confirm functionality
 
-		#if !flash
 		var shape = new Shape();
 		var graphics = shape.graphics;
 		var exists = graphics.drawGraphicsData;
 
 		Assert.notNull(exists);
-		#end
 	}
 
 	public function test_drawPath()
@@ -196,20 +177,15 @@ class GraphicsTest extends Test
 		#end
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_endFill()
 	{
 		// TODO: Confirm functionality
 
-		#if !flash
 		var shape = new Shape();
 		var graphics = shape.graphics;
 		var exists = graphics.endFill;
 
 		Assert.notNull(exists);
-		#end
 	}
 
 	public function test_lineBitmapStyle()

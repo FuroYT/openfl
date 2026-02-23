@@ -1,6 +1,5 @@
 package openfl.filters;
 
-#if !flash
 import openfl.display.BitmapData;
 import openfl.display.DisplayObjectRenderer;
 import openfl.display.Shader;
@@ -357,6 +356,3 @@ private class ConvolutionShader extends BitmapFilterShader
 		#end
 	}
 }
-#else
-typedef ConvolutionFilter = flash.filters.ConvolutionFilter;
-#end

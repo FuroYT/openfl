@@ -1,6 +1,5 @@
 package openfl.net;
 
-#if !flash
 import haxe.io.Path;
 import openfl.events.Event;
 import openfl.events.EventDispatcher;
@@ -190,6 +189,3 @@ class FileReferenceList extends EventDispatcher
 		dispatchEvent(new Event(Event.SELECT));
 	}
 }
-#else
-typedef FileReferenceList = flash.net.FileReferenceList;
-#end

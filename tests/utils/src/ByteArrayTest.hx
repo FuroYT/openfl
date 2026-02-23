@@ -36,7 +36,7 @@ class ByteArrayTest extends Test
 		// remove this if other asserts are enabled in the future
 		Assert.pass();
 
-		#if (!flash && integration)
+		#if integration
 		// byteArray.position = 0;
 		// for (i in 0...byteArray.length) {
 		// 	trace (byteArray.readUnsignedByte ());
@@ -69,8 +69,7 @@ class ByteArrayTest extends Test
 
 		ByteArray.defaultEndian = BIG_ENDIAN;
 		Assert.equals(Endian.BIG_ENDIAN, ByteArray.defaultEndian);
-		#if !flash
-		ByteArray.defaultEndian = LITTLE_ENDIAN;
+				ByteArray.defaultEndian = LITTLE_ENDIAN;
 		Assert.equals(Endian.LITTLE_ENDIAN, ByteArray.defaultEndian);
 		#end
 	}
@@ -125,12 +124,9 @@ class ByteArrayTest extends Test
 		Assert.equals(1, ba.length);
 		Assert.equals(1, ba.position);
 
-		#if (js || flash) // array access might not be possible :(
+		#if js // array access might not be possible :(
 		ba.position = 0;
 		Assert.equals(0xFF, ba.readUnsignedByte());
-		#else
-		Assert.equals(0xFF, ba[0]);
-		#end
 
 		ba.position = 0;
 		Assert.equals(0, ba.position);

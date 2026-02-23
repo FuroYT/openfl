@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import haxe.Timer;
 import openfl.display3D.Context3D;
 import openfl.display3D.Context3DProfile;
@@ -388,192 +387,186 @@ class Stage3D extends EventDispatcher
 		{
 			#if openfl_share_context
 			context3D = stage.context3D;
-			#else
-			context3D = new Context3D(stage, stage.context3D.__contextState, this);
-			#end
 			__dispatchCreate();
-		}
-		else if (renderer.__type == DOM)
-		{
-			// TODO: Do not set Stage.context3D, create separate canvas elements for each Context3D
-
-			#if (js && html5)
-			if (stage.context3D == null)
+			}
+			else if (renderer.__type == DOM)
 			{
-				__canvas = cast Browser.document.createElement("canvas");
-				__canvas.width = stage.stageWidth;
-				__canvas.height = stage.stageHeight;
+				// TODO: Do not set Stage.context3D, create separate canvas elements for each Context3D
 
-				var window = stage.window;
-				var attributes = stage.window.context.attributes;
-
-				var transparentBackground = Reflect.hasField(attributes, "background") && attributes.background == null;
-				var colorDepth = Reflect.hasField(attributes, "colorDepth") ? attributes.colorDepth : 32;
-
-				var options = {
-					alpha: (transparentBackground || colorDepth > 16) ? true : false,
-					antialias: Reflect.hasField(attributes, "antialiasing") ? attributes.antialiasing > 0 : false,
-					depth: true,
-					premultipliedAlpha: true,
-					stencil: true,
-					preserveDrawingBuffer: false
-				};
-
-				__webgl = cast __canvas.getContextWebGL(options);
-
-				if (__webgl != null)
+				#if (js && html5)
+				if (stage.context3D == null)
 				{
-					#if webgl_debug
-					__webgl = untyped WebGLDebugUtils.makeDebugContext(__webgl);
-					#end
+					__canvas = cast Browser.document.createElement("canvas");
+					__canvas.width = stage.stageWidth;
+					__canvas.height = stage.stageHeight;
 
-					if (GL.context == null)
+					var window = stage.window;
+					var attributes = stage.window.context.attributes;
+
+					var transparentBackground = Reflect.hasField(attributes, "background") && attributes.background == null;
+					var colorDepth = Reflect.hasField(attributes, "colorDepth") ? attributes.colorDepth : 32;
+
+					var options = {
+						alpha: (transparentBackground || colorDepth > 16) ? true : false,
+						antialias: Reflect.hasField(attributes, "antialiasing") ? attributes.antialiasing > 0 : false,
+						depth: true,
+						premultipliedAlpha: true,
+						stencil: true,
+						preserveDrawingBuffer: false
+					};
+
+					__webgl = cast __canvas.getContextWebGL(options);
+
+					if (__webgl != null)
 					{
-						GL.context = cast __webgl;
-						GL.type = WEBGL;
-						// GL.version = isWebGL2 ? 2 : 1;
-						GL.version = 1;
-						// stage.window.context.webgl = GL.context;
+						#if webgl_debug
+						__webgl = untyped WebGLDebugUtils.makeDebugContext(__webgl);
+						#end
+
+						if (GL.context == null)
+						{
+							GL.context = cast __webgl;
+							GL.type = WEBGL;
+							// GL.version = isWebGL2 ? 2 : 1;
+							GL.version = 1;
+							// stage.window.context.webgl = GL.context;
+						}
+
+						stage.context3D = new Context3D(stage);
+						stage.context3D.configureBackBuffer(stage.window.width, stage.window.height, 0, true, true, true);
+						stage.context3D.present();
+
+						var renderer:DOMRenderer = cast renderer;
+						renderer.element.appendChild(__canvas);
+
+						__style = __canvas.style;
+						__style.setProperty("position", "absolute", null);
+						__style.setProperty("top", "0", null);
+						__style.setProperty("left", "0", null);
+						__style.setProperty(renderer.__transformOriginProperty, "0 0 0", null);
+						__style.setProperty("z-index", "-1", null);
 					}
 
-					stage.context3D = new Context3D(stage);
-					stage.context3D.configureBackBuffer(stage.window.width, stage.window.height, 0, true, true, true);
-					stage.context3D.present();
+					if (stage.context3D != null)
+					{
+						#if openfl_share_context
+						context3D = stage.context3D;
+						#else
+						context3D = new Context3D(stage, stage.context3D.__contextState, this);
+						#end
+					}
 
-					var renderer:DOMRenderer = cast renderer;
-					renderer.element.appendChild(__canvas);
-
-					__style = __canvas.style;
-					__style.setProperty("position", "absolute", null);
-					__style.setProperty("top", "0", null);
-					__style.setProperty("left", "0", null);
-					__style.setProperty(renderer.__transformOriginProperty, "0 0 0", null);
-					__style.setProperty("z-index", "-1", null);
+					__dispatchCreate();
+					// __dispatchError();
 				}
-
-				if (stage.context3D != null)
+				else
 				{
-					#if openfl_share_context
-					context3D = stage.context3D;
-					#else
-					context3D = new Context3D(stage, stage.context3D.__contextState, this);
-					#end
+					__dispatchError();
 				}
-
-				__dispatchCreate();
-				// __dispatchError();
-			}
-			else
-			{
-				__dispatchError();
+				#end
 			}
 			#end
 		}
-		#end
-	}
 
-	@:noCompletion private function __dispatchError():Void
-	{
-		__contextRequested = false;
-		dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, "Context3D not available"));
-	}
-
-	@:noCompletion private function __dispatchCreate():Void
-	{
-		if (__contextRequested)
+		@:noCompletion private function __dispatchError():Void
 		{
 			__contextRequested = false;
-			dispatchEvent(new Event(Event.CONTEXT3D_CREATE));
+			dispatchEvent(new ErrorEvent(ErrorEvent.ERROR, false, false, "Context3D not available"));
 		}
-	}
 
-	@:noCompletion private function __lostContext():Void
-	{
-		__contextLost = true;
-
-		if (context3D != null)
+		@:noCompletion private function __dispatchCreate():Void
 		{
-			context3D.__dispose();
-			__contextRequested = true;
-		}
-	}
-
-	@:noCompletion private function __resize(width:Int, height:Int):Void
-	{
-		if (width != __width || height != __height)
-		{
-			#if (js && html5)
-			if (__canvas != null)
+			if (__contextRequested)
 			{
-				__canvas.width = width;
-				__canvas.height = height;
+				__contextRequested = false;
+				dispatchEvent(new Event(Event.CONTEXT3D_CREATE));
 			}
-			#end
+		}
 
-			__projectionTransform.copyRawDataFrom(new Vector<Float>([
-				2.0 / (width > 0 ? width : 1),
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				-2.0 / (height > 0 ? height : 1),
-				0.0,
-				0.0,
-				0.0,
-				0.0,
-				-2.0 / 2000,
-				0.0,
-				-1.0,
-				1.0,
-				0.0,
-				1.0
-			]));
+		@:noCompletion private function __lostContext():Void
+		{
+			__contextLost = true;
 
+			if (context3D != null)
+			{
+				context3D.__dispose();
+				__contextRequested = true;
+			}
+		}
+
+		@:noCompletion private function __resize(width:Int, height:Int):Void
+		{
+			if (width != __width || height != __height)
+			{
+				#if (js && html5)
+				if (__canvas != null)
+				{
+					__canvas.width = width;
+					__canvas.height = height;
+				}
+				#end
+
+				__projectionTransform.copyRawDataFrom(new Vector<Float>([
+					2.0 / (width > 0 ? width : 1),
+					0.0,
+					0.0,
+					0.0,
+					0.0,
+					-2.0 / (height > 0 ? height : 1),
+					0.0,
+					0.0,
+					0.0,
+					0.0,
+					-2.0 / 2000,
+					0.0,
+					-1.0,
+					1.0,
+					0.0,
+					1.0
+				]));
+
+				__renderTransform.identity();
+				__renderTransform.appendTranslation(__x, __y, 0);
+				__renderTransform.append(__projectionTransform);
+
+				__width = width;
+				__height = height;
+			}
+		}
+
+		@:noCompletion private function __restoreContext():Void
+		{
+			__contextLost = false;
+			__createContext();
+		}
+
+		@:noCompletion private function get_x():Float
+		{
+			return __x;
+		}
+
+		@:noCompletion private function set_x(value:Float):Float
+		{
+			if (__x == value) return value;
+			__x = value;
 			__renderTransform.identity();
 			__renderTransform.appendTranslation(__x, __y, 0);
 			__renderTransform.append(__projectionTransform);
-
-			__width = width;
-			__height = height;
+			return value;
 		}
-	}
 
-	@:noCompletion private function __restoreContext():Void
-	{
-		__contextLost = false;
-		__createContext();
-	}
+		@:noCompletion private function get_y():Float
+		{
+			return __y;
+		}
 
-	@:noCompletion private function get_x():Float
-	{
-		return __x;
-	}
-
-	@:noCompletion private function set_x(value:Float):Float
-	{
-		if (__x == value) return value;
-		__x = value;
-		__renderTransform.identity();
-		__renderTransform.appendTranslation(__x, __y, 0);
-		__renderTransform.append(__projectionTransform);
-		return value;
-	}
-
-	@:noCompletion private function get_y():Float
-	{
-		return __y;
-	}
-
-	@:noCompletion private function set_y(value:Float):Float
-	{
-		if (__y == value) return value;
-		__y = value;
-		__renderTransform.identity();
-		__renderTransform.appendTranslation(__x, __y, 0);
-		__renderTransform.append(__projectionTransform);
-		return value;
-	}
-}
-#else
-typedef Stage3D = flash.display.Stage3D;
-#end
+		@:noCompletion private function set_y(value:Float):Float
+		{
+			if (__y == value) return value;
+			__y = value;
+			__renderTransform.identity();
+			__renderTransform.appendTranslation(__x, __y, 0);
+			__renderTransform.append(__projectionTransform);
+			return value;
+		}
+		}

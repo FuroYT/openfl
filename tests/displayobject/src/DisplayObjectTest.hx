@@ -212,27 +212,16 @@ class DisplayObjectTest extends Test
 
 		object.alpha = 0.732;
 
-		#if flash
-		Assert.equals(Std.int(0.732 * 256) / 256, object.alpha);
-		#else
 		Assert.equals(0.732, object.alpha);
-		#end
 
 		object.alpha = 1.321;
 
-		#if flash
-		Assert.equals(Std.int(1.321 * 256) / 256, object.alpha);
-		#else
 		Assert.equals(1.0, object.alpha);
-		#end
 
 		object.alpha = -1.432;
 
-		#if flash
-		Assert.equals(Std.int(-1.432 * 256) / 256, object.alpha);
-		#else
 		Assert.equals(0.0, object.alpha);
-		#end
+
 	}
 
 	public function test_blendMode()
@@ -245,7 +234,6 @@ class DisplayObjectTest extends Test
 
 		Assert.equals(BlendMode.ADD, object.blendMode);
 
-		#if !flash
 		object.blendMode = null;
 
 		Assert.equals(BlendMode.NORMAL, object.blendMode);
@@ -449,17 +437,10 @@ class DisplayObjectTest extends Test
 		var matrix:Matrix = object.transform.matrix;
 
 		// TODO: Radians are OK. Sin/Cos are OK. Matrix has some roundings somewhere
-		#if flash
-		Assert.equals(Math.round(cosine * 1000.0) / 1000.0, Math.round(matrix.a * 1000.0) / 1000.0);
-		Assert.equals(Math.round(sine * 1000.0) / 1000.0, Math.round(matrix.b * 1000.0) / 1000.0);
-		Assert.equals(Math.round(-sine * 1000.0) / 1000.0, Math.round(matrix.c * 1000.0) / 1000.0);
-		Assert.equals(Math.round(cosine * 1000.0) / 1000.0, Math.round(matrix.d * 1000.0) / 1000.0);
-		#else
 		Assert.equals(cosine, matrix.a);
 		Assert.equals(sine, matrix.b);
 		Assert.equals(-sine, matrix.c);
 		Assert.equals(cosine, matrix.d);
-		#end
 
 		object.scaleX = scaleX;
 		object.scaleY = scaleY;
@@ -467,17 +448,10 @@ class DisplayObjectTest extends Test
 		matrix = object.transform.matrix;
 
 		// TODO: Matrix has some roundings somewhere
-		#if flash
-		Assert.equals(Math.round(cosineScaledX * 1000.0) / 1000.0, Math.round(matrix.a * 1000.0) / 1000.0);
-		Assert.equals(Math.round(sineScaledX * 1000.0) / 1000.0, Math.round(matrix.b * 1000.0) / 1000.0);
-		Assert.equals(Math.round(-sineScaledY * 1000.0) / 1000.0, Math.round(matrix.c * 1000.0) / 1000.0);
-		Assert.equals(Math.round(cosineScaledY * 1000.0) / 1000.0, Math.round(matrix.d * 1000.0) / 1000.0);
-		#else
 		Assert.equals(cosineScaledX, matrix.a);
 		Assert.equals(sineScaledX, matrix.b);
 		Assert.equals(-sineScaledY, matrix.c);
 		Assert.equals(cosineScaledY, matrix.d);
-		#end
 	}
 
 	public function test_scale9Grid()

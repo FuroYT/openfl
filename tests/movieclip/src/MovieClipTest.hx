@@ -80,13 +80,8 @@ class MovieClipTest extends Test
 	{
 		var clip = new MovieClip();
 
-		#if flash
-		Assert.equals(0, clip.currentFrame);
-		Assert.equals(1, clip.totalFrames);
-		#else
 		Assert.equals(1, clip.currentFrame);
 		Assert.equals(1, clip.totalFrames);
-		#end
 
 		Assert.equals(0, clip.currentLabels.length);
 

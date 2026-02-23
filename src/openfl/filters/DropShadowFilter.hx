@@ -1,6 +1,5 @@
 package openfl.filters;
 
-#if !flash
 import openfl.display.BitmapData;
 import openfl.display.DisplayObjectRenderer;
 import openfl.display.Shader;
@@ -11,7 +10,6 @@ import openfl.geom.Rectangle;
 import lime._internal.graphics.ImageDataUtil; // TODO
 
 #end
-
 /**
 	The DropShadowFilter class lets you add a drop shadow to display objects.
 	The shadow algorithm is based on the same box filter that the blur filter
@@ -290,8 +288,7 @@ import lime._internal.graphics.ImageDataUtil; // TODO
 		return new DropShadowFilter(__distance, __angle, __color, __alpha, __blurX, __blurY, __strength, __quality, __inner, __knockout, __hideObject);
 	}
 
-	@:noCompletion private override function __applyFilter(bitmapData:BitmapData, sourceBitmapData:BitmapData, sourceRect:Rectangle,
-			destPoint:Point):BitmapData
+	@:noCompletion private override function __applyFilter(bitmapData:BitmapData, sourceBitmapData:BitmapData, sourceRect:Rectangle, destPoint:Point):BitmapData
 	{
 		// TODO: Support knockout, inner
 
@@ -385,182 +382,178 @@ import lime._internal.graphics.ImageDataUtil; // TODO
 			shader.offset.value[1] = __offsetY;
 			return shader;
 		}
-		#else
-		return null;
+		} @:noCompletion private function __updateSize():Void
+
+		{
+			__offsetX = Std.int(__distance * Math.cos(__angle * Math.PI / 180));
+			__offsetY = Std.int(__distance * Math.sin(__angle * Math.PI / 180));
+			__topExtension = Math.ceil((__offsetY < 0 ? -__offsetY : 0) + __blurY);
+			__bottomExtension = Math.ceil((__offsetY > 0 ? __offsetY : 0) + __blurY);
+			__leftExtension = Math.ceil((__offsetX < 0 ? -__offsetX : 0) + __blurX);
+			__rightExtension = Math.ceil((__offsetX > 0 ? __offsetX : 0) + __blurX);
+			__calculateNumShaderPasses();
+		}
+
+		@:noCompletion private function __calculateNumShaderPasses():Void
+		{
+			__horizontalPasses = (__blurX <= 0) ? 0 : Math.round(__blurX * (__quality / 4)) + 1;
+			__verticalPasses = (__blurY <= 0) ? 0 : Math.round(__blurY * (__quality / 4)) + 1;
+			__numShaderPasses = __horizontalPasses + __verticalPasses + (__inner ? 2 : 1);
+		}
+
+		// Get & Set Methods
+		@:noCompletion private function get_alpha():Float
+		{
+			return __alpha;
+		}
+
+		@:noCompletion private function set_alpha(value:Float):Float
+		{
+			if (value != __alpha) __renderDirty = true;
+			return __alpha = value;
+		}
+
+		@:noCompletion private function get_angle():Float
+		{
+			return __angle;
+		}
+
+		@:noCompletion private function set_angle(value:Float):Float
+		{
+			if (value != __angle)
+			{
+				__angle = value;
+				__renderDirty = true;
+				__updateSize();
+			}
+			return value;
+		}
+
+		@:noCompletion private function get_blurX():Float
+		{
+			return __blurX;
+		}
+
+		@:noCompletion private function set_blurX(value:Float):Float
+		{
+			if (value != __blurX)
+			{
+				__blurX = value;
+				__renderDirty = true;
+				__updateSize();
+			}
+			return value;
+		}
+
+		@:noCompletion private function get_blurY():Float
+		{
+			return __blurY;
+		}
+
+		@:noCompletion private function set_blurY(value:Float):Float
+		{
+			if (value != __blurY)
+			{
+				__blurY = value;
+				__renderDirty = true;
+				__updateSize();
+			}
+			return value;
+		}
+
+		@:noCompletion private function get_color():Int
+		{
+			return __color;
+		}
+
+		@:noCompletion private function set_color(value:Int):Int
+		{
+			if (value != __color) __renderDirty = true;
+			return __color = value;
+		}
+
+		@:noCompletion private function get_distance():Float
+		{
+			return __distance;
+		}
+
+		@:noCompletion private function set_distance(value:Float):Float
+		{
+			if (value != __distance)
+			{
+				__distance = value;
+				__renderDirty = true;
+				__updateSize();
+			}
+			return value;
+		}
+
+		@:noCompletion private function get_hideObject():Bool
+		{
+			return __hideObject;
+		}
+
+		@:noCompletion private function set_hideObject(value:Bool):Bool
+		{
+			if (value != __hideObject)
+			{
+				__renderDirty = true;
+			}
+			return __hideObject = value;
+		}
+
+		@:noCompletion private function get_inner():Bool
+		{
+			return __inner;
+		}
+
+		@:noCompletion private function set_inner(value:Bool):Bool
+		{
+			if (value != __inner) __renderDirty = true;
+			return __inner = value;
+		}
+
+		@:noCompletion private function get_knockout():Bool
+		{
+			return __knockout;
+		}
+
+		@:noCompletion private function set_knockout(value:Bool):Bool
+		{
+			if (value != __knockout) __renderDirty = true;
+			return __knockout = value;
+		}
+
+		@:noCompletion private function get_quality():Int
+		{
+			return __quality;
+		}
+
+		@:noCompletion private function set_quality(value:Int):Int
+		{
+			if (value != __quality) __renderDirty = true;
+			return __quality = value;
+		}
+
+		@:noCompletion private function get_strength():Float
+		{
+			return __strength;
+		}
+
+		@:noCompletion private function set_strength(value:Float):Float
+		{
+			if (value != __strength) __renderDirty = true;
+			return __strength = value;
+		}
+		}
+
+		#if !openfl_debug
+		@:fileXml('tags="haxe,release"')
+		@:noDebug
 		#end
-	}
-
-	@:noCompletion private function __updateSize():Void
-	{
-		__offsetX = Std.int(__distance * Math.cos(__angle * Math.PI / 180));
-		__offsetY = Std.int(__distance * Math.sin(__angle * Math.PI / 180));
-		__topExtension = Math.ceil((__offsetY < 0 ? -__offsetY : 0) + __blurY);
-		__bottomExtension = Math.ceil((__offsetY > 0 ? __offsetY : 0) + __blurY);
-		__leftExtension = Math.ceil((__offsetX < 0 ? -__offsetX : 0) + __blurX);
-		__rightExtension = Math.ceil((__offsetX > 0 ? __offsetX : 0) + __blurX);
-		__calculateNumShaderPasses();
-	}
-
-	@:noCompletion private function __calculateNumShaderPasses():Void
-	{
-		__horizontalPasses = (__blurX <= 0) ? 0 : Math.round(__blurX * (__quality / 4)) + 1;
-		__verticalPasses = (__blurY <= 0) ? 0 : Math.round(__blurY * (__quality / 4)) + 1;
-		__numShaderPasses = __horizontalPasses + __verticalPasses + (__inner ? 2 : 1);
-	}
-
-	// Get & Set Methods
-	@:noCompletion private function get_alpha():Float
-	{
-		return __alpha;
-	}
-
-	@:noCompletion private function set_alpha(value:Float):Float
-	{
-		if (value != __alpha) __renderDirty = true;
-		return __alpha = value;
-	}
-
-	@:noCompletion private function get_angle():Float
-	{
-		return __angle;
-	}
-
-	@:noCompletion private function set_angle(value:Float):Float
-	{
-		if (value != __angle)
+		private class HideShader extends BitmapFilterShader
 		{
-			__angle = value;
-			__renderDirty = true;
-			__updateSize();
-		}
-		return value;
-	}
-
-	@:noCompletion private function get_blurX():Float
-	{
-		return __blurX;
-	}
-
-	@:noCompletion private function set_blurX(value:Float):Float
-	{
-		if (value != __blurX)
-		{
-			__blurX = value;
-			__renderDirty = true;
-			__updateSize();
-		}
-		return value;
-	}
-
-	@:noCompletion private function get_blurY():Float
-	{
-		return __blurY;
-	}
-
-	@:noCompletion private function set_blurY(value:Float):Float
-	{
-		if (value != __blurY)
-		{
-			__blurY = value;
-			__renderDirty = true;
-			__updateSize();
-		}
-		return value;
-	}
-
-	@:noCompletion private function get_color():Int
-	{
-		return __color;
-	}
-
-	@:noCompletion private function set_color(value:Int):Int
-	{
-		if (value != __color) __renderDirty = true;
-		return __color = value;
-	}
-
-	@:noCompletion private function get_distance():Float
-	{
-		return __distance;
-	}
-
-	@:noCompletion private function set_distance(value:Float):Float
-	{
-		if (value != __distance)
-		{
-			__distance = value;
-			__renderDirty = true;
-			__updateSize();
-		}
-		return value;
-	}
-
-	@:noCompletion private function get_hideObject():Bool
-	{
-		return __hideObject;
-	}
-
-	@:noCompletion private function set_hideObject(value:Bool):Bool
-	{
-		if (value != __hideObject)
-		{
-			__renderDirty = true;
-		}
-		return __hideObject = value;
-	}
-
-	@:noCompletion private function get_inner():Bool
-	{
-		return __inner;
-	}
-
-	@:noCompletion private function set_inner(value:Bool):Bool
-	{
-		if (value != __inner) __renderDirty = true;
-		return __inner = value;
-	}
-
-	@:noCompletion private function get_knockout():Bool
-	{
-		return __knockout;
-	}
-
-	@:noCompletion private function set_knockout(value:Bool):Bool
-	{
-		if (value != __knockout) __renderDirty = true;
-		return __knockout = value;
-	}
-
-	@:noCompletion private function get_quality():Int
-	{
-		return __quality;
-	}
-
-	@:noCompletion private function set_quality(value:Int):Int
-	{
-		if (value != __quality) __renderDirty = true;
-		return __quality = value;
-	}
-
-	@:noCompletion private function get_strength():Float
-	{
-		return __strength;
-	}
-
-	@:noCompletion private function set_strength(value:Float):Float
-	{
-		if (value != __strength) __renderDirty = true;
-		return __strength = value;
-	}
-}
-
-#if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
-#end
-private class HideShader extends BitmapFilterShader
-{
-	@:glFragmentSource("
+			@:glFragmentSource("
 		uniform sampler2D openfl_Texture;
 		uniform sampler2D sourceBitmap;
 		varying vec4 textureCoords;
@@ -569,7 +562,7 @@ private class HideShader extends BitmapFilterShader
 			gl_FragColor = texture2D(openfl_Texture, textureCoords.zw);
 		}
 	")
-	@:glVertexSource("attribute vec4 openfl_Position;
+			@:glVertexSource("attribute vec4 openfl_Position;
 		attribute vec2 openfl_TextureCoord;
 		uniform mat4 openfl_Matrix;
 		uniform vec2 openfl_TextureSize;
@@ -581,14 +574,11 @@ private class HideShader extends BitmapFilterShader
 			textureCoords = vec4(openfl_TextureCoord, openfl_TextureCoord - offset / openfl_TextureSize);
 		}
 	")
-	public function new()
-	{
-		super();
-		#if !macro
-		offset.value = [0, 0];
-		#end
-	}
-}
-#else
-typedef DropShadowFilter = flash.filters.DropShadowFilter;
-#end
+			public function new()
+			{
+				super();
+				#if !macro
+				offset.value = [0, 0];
+				#end
+			}
+		}

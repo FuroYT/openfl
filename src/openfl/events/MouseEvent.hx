@@ -1,6 +1,5 @@
 package openfl.events;
 
-#if !flash
 import openfl.display.InteractiveObject;
 import openfl.geom.Point;
 #if openfl_pool_events
@@ -664,7 +663,17 @@ class MouseEvent extends Event
 	public override function toString():String
 	{
 		return __formatToString("MouseEvent", [
-			"type", "bubbles", "cancelable", "localX", "localY", "relatedObject", "ctrlKey", "altKey", "shiftKey", "buttonDown", "delta"
+			"type",
+			"bubbles",
+			"cancelable",
+			"localX",
+			"localY",
+			"relatedObject",
+			"ctrlKey",
+			"altKey",
+			"shiftKey",
+			"buttonDown",
+			"delta"
 		]);
 	}
 
@@ -706,6 +715,3 @@ class MouseEvent extends Event
 		stageY = Math.NaN;
 	}
 }
-#else
-typedef MouseEvent = flash.events.MouseEvent;
-#end

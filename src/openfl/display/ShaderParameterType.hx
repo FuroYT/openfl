@@ -1,7 +1,5 @@
 package openfl.display;
 
-#if !flash
-
 #if !openfljs
 /**
 	This class defines the constants that represent the possible values for
@@ -10,7 +8,6 @@ package openfl.display;
 	Bender shader language.
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract ShaderParameterType(Null<Int>)
-
 {
 	/**
 		Indicates that the shader parameter is defined as a `bool` value,
@@ -235,10 +232,8 @@ package openfl.display;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract ShaderParameterType(String) from String to String
 
+abstract ShaderParameterType(String) from String to String
 {
 	public var BOOL = "bool";
 	public var BOOL2 = "bool2";
@@ -262,7 +257,4 @@ package openfl.display;
 	public var MATRIX4X3 = "matrix4x3";
 	public var MATRIX4X4 = "matrix4x4";
 }
-#end
-#else
-typedef ShaderParameterType = flash.display.ShaderParameterType;
 #end

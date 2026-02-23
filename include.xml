@@ -46,8 +46,6 @@
 
 	<dependency path="dist/openfl.min.js" if="html5 openfl-html5-extern" unless="debug" embed="true" />
 	<dependency path="dist/openfl.js" if="html5 openfl-html5-extern debug" embed="true" />
-
-	<source path="lib/flash-externs/src" if="flash" />
 	<!-- <source path="src-draft" if="draft" /> -->
 	<source path="lib/draft-api/src" if="draft" />
 
@@ -67,22 +65,13 @@
 
 			<section if="telemetry || advanced-telemetry || openfl-telemetry">
 
-				<haxelib name="hxtelemetry" unless="flash" />
-				<config:hxtelemetry allocations="true" host="localhost" unless="flash" />
-				<haxedef name="advanced-telemetry" if="flash" />
+				<haxelib name="hxtelemetry" />
+				<config:hxtelemetry allocations="true" host="localhost" />
 
 			</section>
 
 			<haxedef name="openfl-debug" if="openfl-telemetry" />
 			<haxedef name="lime-debug" if="openfl-telemetry" />
-
-		</section>
-
-		<section if="flash">
-
-			<set name="openfl-flash" />
-			<haxedef name="openfl-flash" />
-			<haxedef name="advanced-telemetry" if="telemetry" />
 
 		</section>
 
@@ -128,7 +117,7 @@
 
 		</section>
 
-		<set name="openfl-has-default-fonts" if="windows || mac || linux || ios || android || flash || html5 || emscripten || tvos" />
+		<set name="openfl-has-default-fonts" if="windows || mac || linux || ios || android || html5 || emscripten || tvos" />
 		<assets path="assets/fonts" unless="openfl-has-default-fonts || openfl-no-default-fonts" />
 
 	</section>

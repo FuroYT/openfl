@@ -1,6 +1,5 @@
 package openfl.errors;
 
-#if !flash
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
@@ -14,6 +13,3 @@ class ArgumentError extends Error
 		name = "ArgumentError";
 	}
 }
-#else
-typedef ArgumentError = flash.errors.ArgumentError;
-#end

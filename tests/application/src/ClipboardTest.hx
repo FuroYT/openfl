@@ -9,9 +9,6 @@ class ClipboardTest extends Test
 {
 	// Security sandbox rules for Flash Player require `Clipboard.getData` to occur
 	// only within a "paste" event from the user
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_clear()
 	{
 		var clipboard = Clipboard.generalClipboard;
@@ -24,9 +21,6 @@ class ClipboardTest extends Test
 		Assert.isNull(clipboard.getData(ClipboardFormats.TEXT_FORMAT));
 	}
 
-	#if flash
-	@Ignored
-	#end
 	public function test_clearData()
 	{
 		var clipboard = Clipboard.generalClipboard;
@@ -37,7 +31,7 @@ class ClipboardTest extends Test
 		// clearing data for any format clears the only one set in Lime Clipboard
 		clipboard.clearData(ClipboardFormats.HTML_FORMAT);
 
-		#if (flash || !integration)
+		#if !integration
 		Assert.isNull(clipboard.getData(ClipboardFormats.HTML_FORMAT));
 		Assert.equals('Test Data', clipboard.getData(ClipboardFormats.TEXT_FORMAT));
 		// for some reason, calling clearData crashes on AIR
@@ -49,9 +43,6 @@ class ClipboardTest extends Test
 		#end
 	}
 
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_getData()
 	{
 		var textFormatData = 'Text Format Data';
@@ -64,9 +55,6 @@ class ClipboardTest extends Test
 		// RTF data is tested in integration, requires external asset
 	}
 
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_hasFormat()
 	{
 		var clipboard = Clipboard.generalClipboard;
@@ -80,16 +68,13 @@ class ClipboardTest extends Test
 
 		Assert.isTrue(clipboard.hasFormat(ClipboardFormats.TEXT_FORMAT));
 
-		#if (!flash && integration)
+		#if integration
 		// TODO
 		Assert.isTrue(clipboard.hasFormat(ClipboardFormats.RICH_TEXT_FORMAT));
 		Assert.isTrue(clipboard.hasFormat(ClipboardFormats.HTML_FORMAT));
 		#end
 	}
 
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_setData()
 	{
 		var clipboard = Clipboard.generalClipboard;
@@ -105,9 +90,6 @@ class ClipboardTest extends Test
 		Assert.equals('Sample Text', clipboard.getData(ClipboardFormats.TEXT_FORMAT));
 	}
 
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_setDataHandler()
 	{
 		// TODO: Confirm functionality
@@ -121,9 +103,6 @@ class ClipboardTest extends Test
 	}
 
 	// Properties
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_formats()
 	{
 		var clipboard = Clipboard.generalClipboard;
@@ -133,7 +112,7 @@ class ClipboardTest extends Test
 
 		clipboard.setData(ClipboardFormats.HTML_FORMAT, 'Test Clipboard Data');
 
-		#if (flash || !integration)
+		#if !integration
 		Assert.equals(1, clipboard.formats.length);
 		Assert.equals(1, clipboard.formats.filter(function(format:ClipboardFormats):Bool
 		{
@@ -157,9 +136,6 @@ class ClipboardTest extends Test
 		#end
 	}
 
-	#if (flash && !air)
-	@Ignored
-	#end
 	public function test_generalClipboard()
 	{
 		Assert.notNull(Clipboard.generalClipboard);

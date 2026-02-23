@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.IBitmapDrawableType;
 import openfl.display._internal.PerlinNoise;
 import openfl.display3D._internal.GLFramebuffer;
@@ -117,8 +116,7 @@ import openfl.display._internal.stats.DrawCallContext;
 @:access(openfl.geom.Point)
 @:access(openfl.geom.Rectangle)
 #if !openfl_debug
-@:fileXml('tags="haxe,release"')
-@:noDebug
+@:fileXml('tags="haxe,release"') @:noDebug
 #end
 @:autoBuild(openfl.utils._internal.AssetsMacro.embedBitmap())
 class BitmapData implements IBitmapDrawable
@@ -506,14 +504,7 @@ class BitmapData implements IBitmapDrawable
 		}
 
 		var bitmapData = null;
-		var foundDifference,
-			pixel:ARGB,
-			otherPixel:ARGB,
-			comparePixel:ARGB,
-			r,
-			g,
-			b,
-			a;
+		var foundDifference, pixel:ARGB, otherPixel:ARGB, comparePixel:ARGB, r, g, b, a;
 
 		for (y in 0...height)
 		{
@@ -1199,7 +1190,7 @@ class BitmapData implements IBitmapDrawable
 		#end
 	}
 
-	#if (!openfl_doc_gen || (!js && !html5 && !flash_doc_gen))
+	#if (!openfl_doc_gen || (!js && !html5))
 	/**
 		Creates a new BitmapData instance from Base64-encoded data synchronously. This means
 		that the BitmapData will be returned immediately (if supported).
@@ -1223,7 +1214,7 @@ class BitmapData implements IBitmapDrawable
 	}
 	#end
 
-	#if (!openfl_doc_gen || (!js && !html5 && !flash_doc_gen))
+	#if (!openfl_doc_gen || (!js && !html5))
 	/**
 		Creates a new BitmapData from bytes (a haxe.io.Bytes or openfl.utils.ByteArray)
 		synchronously. This means that the BitmapData will be returned immediately (if
@@ -1273,7 +1264,7 @@ class BitmapData implements IBitmapDrawable
 	}
 	#end
 
-	#if (!openfl_doc_gen || (!js && !html5 && !flash_doc_gen))
+	#if (!openfl_doc_gen || (!js && !html5))
 	/**
 		Creates a new BitmapData from a file path synchronously. This means that the
 		BitmapData will be returned immediately (if supported).
@@ -3379,6 +3370,3 @@ class BitmapData implements IBitmapDrawable
 		__renderTransform.copyFrom(__worldTransform);
 	}
 }
-#else
-typedef BitmapData = flash.display.BitmapData;
-#end

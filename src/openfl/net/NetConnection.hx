@@ -1,6 +1,5 @@
 package openfl.net;
 
-#if !flash
 import openfl.events.EventDispatcher;
 import openfl.events.NetStatusEvent;
 
@@ -75,7 +74,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public static var defaultObjectEncoding:ObjectEncoding;
 	#end
-
 	#if false
 	/**
 		Indicates the object on which callback methods are invoked. The
@@ -88,7 +86,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public var client:Dynamic;
 	#end
-
 	#if false
 	/**
 		Indicates whether the application is connected to a server through a
@@ -99,7 +96,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public var connected (default, null):Bool;
 	#end
-
 	#if false
 	/**
 		The proxy type used to make a successful connection to Flash Media
@@ -120,7 +116,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public var connectedProxyType (default, null):String;
 	#end
-
 	#if false
 	/**
 		The identifier of the Flash Media Server instance to which this Flash
@@ -130,7 +125,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var farID (default, null):String;
 	#end
-
 	#if false
 	/**
 		A value chosen substantially by Flash Media Server, unique to this
@@ -140,7 +134,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var farNonce (default, null):String;
 	#end
-
 	#if false
 	/**
 		The total number of inbound and outbound peer connections that this
@@ -152,7 +145,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var maxPeerConnections:UInt;
 	#end
-
 	#if false
 	/**
 		The identifier of this Flash Player or Adobe AIR instance for this
@@ -169,7 +161,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var nearID (default, null):String;
 	#end
-
 	#if false
 	/**
 		A value chosen substantially by this Flash Player or Adobe AIR
@@ -179,7 +170,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var nearNonce (default, null):String;
 	#end
-
 	#if false
 	/**
 		The object encoding for this NetConnection instance.
@@ -231,7 +221,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public var objectEncoding:ObjectEncoding;
 	#end
-
 	#if false
 	/**
 		The protocol used to establish the connection. This property is
@@ -249,7 +238,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var protocol (default, null):String;
 	#end
-
 	#if false
 	/**
 		Determines which fallback methods are tried if an initial connection
@@ -275,7 +263,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public var proxyType:String;
 	#end
-
 	#if false
 	/**
 		An object that holds all of the peer subscriber NetStream objects that
@@ -285,7 +272,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) @:require(flash10) public var unconnectedPeerStreams (default, null):Array<Dynamic>;
 	#end
-
 	#if false
 	/**
 		The URI passed to the NetConnection.connect() method. If
@@ -294,7 +280,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public var uri (default, null):String;
 	#end
-
 	#if false
 	/**
 		Indicates whether a secure connection was made using native Transport
@@ -345,7 +330,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public function addHeader (operation:String, mustUnderstand:Bool = false, ?param:Object):Void;
 	#end
-
 	#if false
 	/**
 		Calls a command or method on Flash Media Server or on an application
@@ -384,7 +368,6 @@ class NetConnection extends EventDispatcher
 	**/
 	// @:noCompletion @:dox(hide) public function call (command:String, responder:openfl.net.Responder, ?p1:Dynamic, ?p2:Dynamic, ?p3:Dynamic, ?p4:Dynamic, ?p5:Dynamic):Void;
 	#end
-
 	#if false
 	/**
 		Closes the connection that was opened locally or to the server and
@@ -535,6 +518,3 @@ class NetConnection extends EventDispatcher
 		this.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, true, {code: NetConnection.CONNECT_SUCCESS}));
 	}
 }
-#else
-typedef NetConnection = flash.net.NetConnection;
-#end

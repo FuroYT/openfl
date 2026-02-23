@@ -1,6 +1,5 @@
 package openfl.events;
 
-#if !flash
 /**
 	The EventDispatcher class is the base class for all classes that dispatch
 	events. The EventDispatcher class implements the IEventDispatcher interface
@@ -552,11 +551,4 @@ private class Listener
 		#if hl // https://github.com/HaxeFoundation/hashlink/issues/301
 		return ((Reflect.compareMethods(this.callback, callback) || Reflect.compare(this.callback, callback) == 0)
 			&& this.useCapture == useCapture);
-		#else
-		return (Reflect.compareMethods(this.callback, callback) && this.useCapture == useCapture);
-		#end
-	}
-}
-#else
-typedef EventDispatcher = flash.events.EventDispatcher;
-#end
+		}}

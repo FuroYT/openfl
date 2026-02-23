@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.ShaderBuffer;
 import openfl.display3D.Context3D;
 import openfl.display3D.Program3D;
@@ -549,7 +548,7 @@ class Shader
 			__initGL();
 		}
 	}
-  
+
 	@:noCompletion private function __buildSourcePrefix(isFragment:Bool):String
 	{
 		var extensions = "";
@@ -572,10 +571,7 @@ class Shader
 				#ifdef GL_ES
 				"
 			+ (precisionHint == FULL ? "#ifdef GL_FRAGMENT_PRECISION_HIGH
-					precision highp float;
-				#else
-					precision mediump float;
-				#endif" : "precision lowp float;")
+					precision highp float;if" : "precision lowp float;")
 			+ "
 				#endif
 				";
@@ -1155,6 +1151,3 @@ class Shader
 		return __fieldList.indexOf(name) != -1;
 	}
 }
-#else
-typedef Shader = flash.display.Shader;
-#end

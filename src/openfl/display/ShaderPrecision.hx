@@ -1,7 +1,5 @@
 package openfl.display;
 
-#if !flash
-
 #if !openfljs
 /**
 	This class defines the constants that represent the possible values for
@@ -27,7 +25,6 @@ package openfl.display;
 	* `sqrt(x)`
 **/
 #if (haxe_ver >= 4.0) enum #else @:enum #end abstract ShaderPrecision(Null<Int>)
-
 {
 	/**
 		Represents fast precision mode.
@@ -71,15 +68,10 @@ package openfl.display;
 		}
 	}
 }
-#else
-@SuppressWarnings("checkstyle:FieldDocComment")
-#if (haxe_ver >= 4.0) enum #else @:enum #end abstract ShaderPrecision(String) from String to String
 
+abstract ShaderPrecision(String) from String to String
 {
 	public var FAST = "fast";
 	public var FULL = "full";
 }
-#end
-#else
-typedef ShaderPrecision = flash.display.ShaderPrecision;
 #end

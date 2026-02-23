@@ -1,6 +1,5 @@
 package openfl.display;
 
-#if !flash
 import openfl.display._internal.GraphicsDataType;
 import openfl.display._internal.GraphicsFillType;
 
@@ -30,6 +29,3 @@ import openfl.display._internal.GraphicsFillType;
 		this.__graphicsFillType = END_FILL;
 	}
 }
-#else
-typedef GraphicsEndFill = flash.display.GraphicsEndFill;
-#end

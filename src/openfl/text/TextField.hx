@@ -1,6 +1,5 @@
 package openfl.text;
 
-#if !flash
 import haxe.Timer;
 import openfl.text._internal.HTMLParser;
 import openfl.text._internal.TextEngine;
@@ -1794,1561 +1793,1380 @@ class TextField extends InteractiveObject
 	{
 		#if (js && html5)
 		return position;
-		#else
-		return position.advance.x;
-		#end
-	}
+		} @:noCompletion private override function __getBounds(rect:Rectangle, matrix:Matrix):Void
 
-	@:noCompletion private override function __getBounds(rect:Rectangle, matrix:Matrix):Void
-	{
-		__updateLayout();
-
-		var bounds = Rectangle.__pool.get();
-		bounds.copyFrom(__textEngine.bounds);
-		bounds.offset(__offsetX, __offsetY);
-		bounds.__transform(bounds, matrix);
-
-		rect.__expand(bounds.x, bounds.y, bounds.width, bounds.height);
-
-		Rectangle.__pool.release(bounds);
-	}
-
-	@:noCompletion private function __getCharBoundaries(charIndex:Int, rect:Rectangle):Bool
-	{
-		if (charIndex < 0 || charIndex > __text.length - 1) return false;
-
-		__updateLayout();
-
-		for (group in __textEngine.layoutGroups)
 		{
-			if (charIndex >= group.startIndex && charIndex < group.endIndex)
+			__updateLayout();
+
+			var bounds = Rectangle.__pool.get();
+			bounds.copyFrom(__textEngine.bounds);
+			bounds.offset(__offsetX, __offsetY);
+			bounds.__transform(bounds, matrix);
+
+			rect.__expand(bounds.x, bounds.y, bounds.width, bounds.height);
+
+			Rectangle.__pool.release(bounds);
+		}
+
+		@:noCompletion private function __getCharBoundaries(charIndex:Int, rect:Rectangle):Bool
+		{
+			if (charIndex < 0 || charIndex > __text.length - 1) return false;
+
+			__updateLayout();
+
+			for (group in __textEngine.layoutGroups)
 			{
-				try
+				if (charIndex >= group.startIndex && charIndex < group.endIndex)
 				{
-					var x = group.offsetX;
+					try
+					{
+						var x = group.offsetX;
+
+						for (i in 0...(charIndex - group.startIndex))
+						{
+							x += group.getAdvance(i);
+						}
+
+						// TODO: Is this actually right for combining characters?
+						var lastPosition = group.getAdvance(charIndex - group.startIndex);
+
+						rect.setTo(x, group.offsetY, lastPosition, group.ascent + group.descent);
+						return true;
+					}
+					catch (e:Dynamic) {}
+				}
+			}
+
+			return false;
+		}
+
+		@:noCompletion private function __getCharIndexOnDifferentLine(charIndex:Int, lineIndex:Int):Int
+		{
+			if (charIndex < 0 || charIndex > __text.length) return -1;
+			if (lineIndex < 0 || lineIndex > __textEngine.numLines - 1) return -1;
+
+			var x:Null<Float> = null, y:Null<Float> = null;
+
+			for (group in __textEngine.layoutGroups)
+			{
+				if (charIndex >= group.startIndex && charIndex <= group.endIndex)
+				{
+					x = group.offsetX;
 
 					for (i in 0...(charIndex - group.startIndex))
 					{
 						x += group.getAdvance(i);
 					}
 
-					// TODO: Is this actually right for combining characters?
-					var lastPosition = group.getAdvance(charIndex - group.startIndex);
-
-					rect.setTo(x, group.offsetY, lastPosition, group.ascent + group.descent);
-					return true;
-				}
-				catch (e:Dynamic) {}
-			}
-		}
-
-		return false;
-	}
-
-	@:noCompletion private function __getCharIndexOnDifferentLine(charIndex:Int, lineIndex:Int):Int
-	{
-		if (charIndex < 0 || charIndex > __text.length) return -1;
-		if (lineIndex < 0 || lineIndex > __textEngine.numLines - 1) return -1;
-
-		var x:Null<Float> = null, y:Null<Float> = null;
-
-		for (group in __textEngine.layoutGroups)
-		{
-			if (charIndex >= group.startIndex && charIndex <= group.endIndex)
-			{
-				x = group.offsetX;
-
-				for (i in 0...(charIndex - group.startIndex))
-				{
-					x += group.getAdvance(i);
+					if (y != null) return __getPosition(x, y);
 				}
 
-				if (y != null) return __getPosition(x, y);
-			}
-
-			if (group.lineIndex == lineIndex)
-			{
-				y = group.offsetY + group.height / 2;
-
-				for (i in 0...scrollV - 1)
+				if (group.lineIndex == lineIndex)
 				{
-					y -= __textEngine.lineHeights[i];
-				}
+					y = group.offsetY + group.height / 2;
 
-				if (x != null) return __getPosition(x, y);
-			}
-		}
+					for (i in 0...scrollV - 1)
+					{
+						y -= __textEngine.lineHeights[i];
+					}
 
-		return -1;
-	}
-
-	@:noCompletion private override function __getCursor():MouseCursor
-	{
-		var group = __getGroup(mouseX, mouseY, true);
-
-		if (group != null && group.format.url != "")
-		{
-			return BUTTON;
-		}
-		else if (__textEngine.selectable)
-		{
-			return IBEAM;
-		}
-
-		return null;
-	}
-
-	@:noCompletion private function __getGroup(x:Float, y:Float, precise = false):TextLayoutGroup
-	{
-		__updateLayout();
-
-		x += scrollH;
-
-		for (i in 0...scrollV - 1)
-		{
-			y += __textEngine.lineHeights[i];
-		}
-
-		if (!precise && y > __textEngine.textHeight) y = __textEngine.textHeight;
-
-		var firstGroup = true;
-		var group, nextGroup;
-
-		for (i in 0...__textEngine.layoutGroups.length)
-		{
-			group = __textEngine.layoutGroups[i];
-
-			if (i < __textEngine.layoutGroups.length - 1)
-			{
-				nextGroup = __textEngine.layoutGroups[i + 1];
-			}
-			else
-			{
-				nextGroup = null;
-			}
-
-			if (firstGroup)
-			{
-				if (y < group.offsetY) y = group.offsetY;
-				if (x < group.offsetX) x = group.offsetX;
-				firstGroup = false;
-			}
-
-			if ((y >= group.offsetY && y <= group.offsetY + group.height) || (!precise && nextGroup == null))
-			{
-				if ((x >= group.offsetX && x <= group.offsetX + group.width)
-					|| (!precise && (nextGroup == null || nextGroup.lineIndex != group.lineIndex)))
-				{
-					return group;
+					if (x != null) return __getPosition(x, y);
 				}
 			}
+
+			return -1;
 		}
 
-		return null;
-	}
-
-	@:noCompletion private function __getPosition(x:Float, y:Float):Int
-	{
-		var group = __getGroup(x, y);
-
-		if (group == null)
+		@:noCompletion private override function __getCursor():MouseCursor
 		{
-			return __text.length;
-		}
+			var group = __getGroup(mouseX, mouseY, true);
 
-		var advance = 0.0;
-
-		for (i in 0...group.positions.length)
-		{
-			advance += group.getAdvance(i);
-
-			if (x <= group.offsetX + advance)
+			if (group != null && group.format.url != "")
 			{
-				if (x <= group.offsetX + (advance - group.getAdvance(i)) + (group.getAdvance(i) / 2))
+				return BUTTON;
+			}
+			else if (__textEngine.selectable)
+			{
+				return IBEAM;
+			}
+
+			return null;
+		}
+
+		@:noCompletion private function __getGroup(x:Float, y:Float, precise = false):TextLayoutGroup
+		{
+			__updateLayout();
+
+			x += scrollH;
+
+			for (i in 0...scrollV - 1)
+			{
+				y += __textEngine.lineHeights[i];
+			}
+
+			if (!precise && y > __textEngine.textHeight) y = __textEngine.textHeight;
+
+			var firstGroup = true;
+			var group, nextGroup;
+
+			for (i in 0...__textEngine.layoutGroups.length)
+			{
+				group = __textEngine.layoutGroups[i];
+
+				if (i < __textEngine.layoutGroups.length - 1)
 				{
-					return group.startIndex + i;
+					nextGroup = __textEngine.layoutGroups[i + 1];
 				}
 				else
 				{
-					return (group.startIndex + i < group.endIndex) ? group.startIndex + i + 1 : group.endIndex;
+					nextGroup = null;
 				}
-			}
-		}
 
-		return group.endIndex;
-	}
-
-	@:noCompletion private override function __hitTest(x:Float, y:Float, shapeFlag:Bool, stack:Array<DisplayObject>, interactiveOnly:Bool,
-			hitObject:DisplayObject):Bool
-	{
-		if (!hitObject.visible || __isMask || (interactiveOnly && !mouseEnabled)) return false;
-		if (mask != null && !mask.__hitTestMask(x, y)) return false;
-
-		__getRenderTransform();
-		__updateLayout();
-
-		var px = __renderTransform.__transformInverseX(x, y);
-		var py = __renderTransform.__transformInverseY(x, y);
-
-		if (__textEngine.bounds.contains(px, py))
-		{
-			if (stack != null)
-			{
-				stack.push(hitObject);
-			}
-
-			return true;
-		}
-
-		return false;
-	}
-
-	@:noCompletion private override function __hitTestMask(x:Float, y:Float):Bool
-	{
-		__getRenderTransform();
-		__updateLayout();
-
-		var px = __renderTransform.__transformInverseX(x, y);
-		var py = __renderTransform.__transformInverseY(x, y);
-
-		if (__textEngine.bounds.contains(px, py))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	@:noCompletion private function __replaceSelectedText(value:String, restrict:Bool = true):Void
-	{
-		if (value == null) value = "";
-		if (value == "" && __selectionIndex == __caretIndex) return;
-
-		var startIndex = __caretIndex < __selectionIndex ? __caretIndex : __selectionIndex;
-		var endIndex = __caretIndex > __selectionIndex ? __caretIndex : __selectionIndex;
-
-		if (startIndex == endIndex && __textEngine.maxChars > 0 && __text.length == __textEngine.maxChars) return;
-
-		if (startIndex > __text.length) startIndex = __text.length;
-		if (endIndex > __text.length) endIndex = __text.length;
-		if (endIndex < startIndex)
-		{
-			var cache = endIndex;
-			endIndex = startIndex;
-			startIndex = cache;
-		}
-		if (startIndex < 0) startIndex = 0;
-
-		__replaceText(startIndex, endIndex, value, restrict);
-	}
-
-	@:noCompletion private function __replaceText(beginIndex:Int, endIndex:Int, newText:String, restrict:Bool):Void
-	{
-		if (endIndex < beginIndex || beginIndex < 0 || endIndex > __text.length || newText == null) return;
-
-		if (restrict)
-		{
-			newText = __textEngine.restrictText(newText);
-
-			if (__textEngine.maxChars > 0)
-			{
-				var removeLength = (endIndex - beginIndex);
-				var maxLength = __textEngine.maxChars - __text.length + removeLength;
-
-				if (maxLength <= 0)
+				if (firstGroup)
 				{
-					newText = "";
+					if (y < group.offsetY) y = group.offsetY;
+					if (x < group.offsetX) x = group.offsetX;
+					firstGroup = false;
 				}
-				else if (maxLength < newText.length)
+
+				if ((y >= group.offsetY && y <= group.offsetY + group.height) || (!precise && nextGroup == null))
 				{
-					newText = newText.substr(0, maxLength);
-				}
-			}
-		}
-
-		__updateText(__text.substring(0, beginIndex) + newText + __text.substring(endIndex));
-
-		var offset = newText.length - (endIndex - beginIndex);
-
-		var i = 0;
-		var range;
-
-		while (i < __textEngine.textFormatRanges.length)
-		{
-			range = __textEngine.textFormatRanges[i];
-
-			if (beginIndex == endIndex)
-			{
-				if (range.start == range.end)
-				{
-					// this should only ever be true if there is no text (start == end == 0)
-					if (range.start != 0)
+					if ((x >= group.offsetX && x <= group.offsetX + group.width)
+						|| (!precise && (nextGroup == null || nextGroup.lineIndex != group.lineIndex)))
 					{
-						Log.warn("You found a bug in OpenFL's text code! Please save a copy of your project and contact Joshua Granick (@singmajesty) so we can fix this.");
+						return group;
+					}
+				}
+			}
+
+			return null;
+		}
+
+		@:noCompletion private function __getPosition(x:Float, y:Float):Int
+		{
+			var group = __getGroup(x, y);
+
+			if (group == null)
+			{
+				return __text.length;
+			}
+
+			var advance = 0.0;
+
+			for (i in 0...group.positions.length)
+			{
+				advance += group.getAdvance(i);
+
+				if (x <= group.offsetX + advance)
+				{
+					if (x <= group.offsetX + (advance - group.getAdvance(i)) + (group.getAdvance(i) / 2))
+					{
+						return group.startIndex + i;
 					}
 					else
 					{
+						return (group.startIndex + i < group.endIndex) ? group.startIndex + i + 1 : group.endIndex;
+					}
+				}
+			}
+
+			return group.endIndex;
+		}
+
+		@:noCompletion private override function __hitTest(x:Float, y:Float, shapeFlag:Bool, stack:Array<DisplayObject>, interactiveOnly:Bool,
+				hitObject:DisplayObject):Bool
+		{
+			if (!hitObject.visible || __isMask || (interactiveOnly && !mouseEnabled)) return false;
+			if (mask != null && !mask.__hitTestMask(x, y)) return false;
+
+			__getRenderTransform();
+			__updateLayout();
+
+			var px = __renderTransform.__transformInverseX(x, y);
+			var py = __renderTransform.__transformInverseY(x, y);
+
+			if (__textEngine.bounds.contains(px, py))
+			{
+				if (stack != null)
+				{
+					stack.push(hitObject);
+				}
+
+				return true;
+			}
+
+			return false;
+		}
+
+		@:noCompletion private override function __hitTestMask(x:Float, y:Float):Bool
+		{
+			__getRenderTransform();
+			__updateLayout();
+
+			var px = __renderTransform.__transformInverseX(x, y);
+			var py = __renderTransform.__transformInverseY(x, y);
+
+			if (__textEngine.bounds.contains(px, py))
+			{
+				return true;
+			}
+
+			return false;
+		}
+
+		@:noCompletion private function __replaceSelectedText(value:String, restrict:Bool = true):Void
+		{
+			if (value == null) value = "";
+			if (value == "" && __selectionIndex == __caretIndex) return;
+
+			var startIndex = __caretIndex < __selectionIndex ? __caretIndex : __selectionIndex;
+			var endIndex = __caretIndex > __selectionIndex ? __caretIndex : __selectionIndex;
+
+			if (startIndex == endIndex && __textEngine.maxChars > 0 && __text.length == __textEngine.maxChars) return;
+
+			if (startIndex > __text.length) startIndex = __text.length;
+			if (endIndex > __text.length) endIndex = __text.length;
+			if (endIndex < startIndex)
+			{
+				var cache = endIndex;
+				endIndex = startIndex;
+				startIndex = cache;
+			}
+			if (startIndex < 0) startIndex = 0;
+
+			__replaceText(startIndex, endIndex, value, restrict);
+		}
+
+		@:noCompletion private function __replaceText(beginIndex:Int, endIndex:Int, newText:String, restrict:Bool):Void
+		{
+			if (endIndex < beginIndex || beginIndex < 0 || endIndex > __text.length || newText == null) return;
+
+			if (restrict)
+			{
+				newText = __textEngine.restrictText(newText);
+
+				if (__textEngine.maxChars > 0)
+				{
+					var removeLength = (endIndex - beginIndex);
+					var maxLength = __textEngine.maxChars - __text.length + removeLength;
+
+					if (maxLength <= 0)
+					{
+						newText = "";
+					}
+					else if (maxLength < newText.length)
+					{
+						newText = newText.substr(0, maxLength);
+					}
+				}
+			}
+
+			__updateText(__text.substring(0, beginIndex) + newText + __text.substring(endIndex));
+
+			var offset = newText.length - (endIndex - beginIndex);
+
+			var i = 0;
+			var range;
+
+			while (i < __textEngine.textFormatRanges.length)
+			{
+				range = __textEngine.textFormatRanges[i];
+
+				if (beginIndex == endIndex)
+				{
+					if (range.start == range.end)
+					{
+						// this should only ever be true if there is no text (start == end == 0)
+						if (range.start != 0)
+						{
+							Log.warn("You found a bug in OpenFL's text code! Please save a copy of your project and contact Joshua Granick (@singmajesty) so we can fix this.");
+						}
+						else
+						{
+							range.end += offset;
+						}
+					}
+					else if (range.end < beginIndex)
+					{
+						// do nothing, range is completely before insertion point
+					}
+					else if (range.start >= beginIndex)
+					{
+						// shift range, range is after insertion point
+						range.start += offset;
+						range.end += offset;
+					}
+					else if (range.start < beginIndex && range.end >= endIndex)
+					{
+						// shift end, range overlaps insertion point
+						// insertions use the format to the left of the insertion point, when beginIndex == endIndex
 						range.end += offset;
 					}
 				}
-				else if (range.end < beginIndex)
+				else
 				{
-					// do nothing, range is completely before insertion point
-				}
-				else if (range.start >= beginIndex)
-				{
-					// shift range, range is after insertion point
-					range.start += offset;
-					range.end += offset;
-				}
-				else if (range.start < beginIndex && range.end >= endIndex)
-				{
-					// shift end, range overlaps insertion point
-					// insertions use the format to the left of the insertion point, when beginIndex == endIndex
-					range.end += offset;
-				}
-			}
-			else
-			{
-				if (range.end <= beginIndex)
-				{
-					// do nothing, range is before selection
-				}
-				else if (range.start > endIndex)
-				{
-					// shift start and end, range is after selection
-					range.start += offset;
-					range.end += offset;
-				}
-				else if (range.start <= beginIndex && range.end > endIndex)
-				{
-					// shift end, range overlaps and extends after selection
-					range.end += offset;
-				}
-				else if (range.start >= beginIndex && range.end <= endIndex)
-				{
-					// delete, range is encompassed by selection
-					__textEngine.textFormatRanges.splice(i--, 1);
-				}
-				else if (range.end > endIndex && range.start > beginIndex && range.start <= endIndex)
-				{
-					// set start and shift end, beginning of range overlaps selection
-					// replacements use the format to the right of the selection, when beginIndex != endIndex
-					range.start = beginIndex;
-					range.end += offset;
-				}
-				else if (range.start < beginIndex && range.end > beginIndex && range.end <= endIndex)
-				{
-					// set end, end of range overlaps selection
-					range.end = beginIndex;
-				}
-			}
-
-			i++;
-		}
-
-		// robust catchers for myriad edge cases
-		if (__textEngine.textFormatRanges.length == 0)
-		{
-			// add DTF, all format ranges were deleted
-			__textEngine.textFormatRanges.push(new TextFormatRange(defaultTextFormat.clone(), 0, newText.length));
-		}
-		else if (beginIndex == endIndex && __textEngine.textFormatRanges[0].start > 0)
-		{
-			// prefix DTF, text was inserted without a format
-			__textEngine.textFormatRanges.unshift(new TextFormatRange(defaultTextFormat.clone(), 0, __textEngine.textFormatRanges[0].start));
-		}
-		else if (beginIndex != endIndex && __textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end < __text.length)
-		{
-			// append DTF, text was replaced without a format
-			__textEngine.textFormatRanges.push(new TextFormatRange(defaultTextFormat.clone(),
-				__textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end, __text.length));
-		}
-
-		__selectionIndex = __caretIndex = beginIndex + newText.length;
-
-		__dirty = true;
-		__layoutDirty = true;
-		__setRenderDirty();
-	}
-
-	@:noCompletion private function __startCursorTimer():Void
-	{
-		if (type == INPUT)
-		{
-			if (__inputEnabled)
-			{
-				__cursorTimer = Timer.delay(__startCursorTimer, 600);
-				__showCursor = !__showCursor;
-			}
-			__dirty = true;
-			__setRenderDirty();
-		}
-		else if (selectable)
-		{
-			__dirty = true;
-			__setRenderDirty();
-		}
-	}
-
-	@:noCompletion private function __startTextInput():Void
-	{
-		if (__caretIndex < 0)
-		{
-			__caretIndex = __text.length;
-			__selectionIndex = __caretIndex;
-		}
-
-		var enableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
-
-		if (enableInput)
-		{
-			__enableInput();
-		}
-	}
-
-	@:noCompletion private function __stopCursorTimer():Void
-	{
-		if (__cursorTimer != null)
-		{
-			__cursorTimer.stop();
-			__cursorTimer = null;
-		}
-
-		if (__showCursor)
-		{
-			__showCursor = false;
-			__dirty = true;
-			__setRenderDirty();
-		}
-	}
-
-	@:noCompletion private function __stopTextInput():Void
-	{
-		var disableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
-
-		if (disableInput)
-		{
-			__disableInput();
-		}
-	}
-
-	@:noCompletion private function __updateLayout():Void
-	{
-		if (__layoutDirty)
-		{
-			var cacheWidth = __textEngine.width;
-			__textEngine.update();
-
-			if (__textEngine.autoSize != NONE)
-			{
-				if (__textEngine.width != cacheWidth)
-				{
-					switch (__textEngine.autoSize)
+					if (range.end <= beginIndex)
 					{
-						case RIGHT:
-							x += cacheWidth - __textEngine.width;
-
-						case CENTER:
-							x += (cacheWidth - __textEngine.width) / 2;
-
-						default:
+						// do nothing, range is before selection
+					}
+					else if (range.start > endIndex)
+					{
+						// shift start and end, range is after selection
+						range.start += offset;
+						range.end += offset;
+					}
+					else if (range.start <= beginIndex && range.end > endIndex)
+					{
+						// shift end, range overlaps and extends after selection
+						range.end += offset;
+					}
+					else if (range.start >= beginIndex && range.end <= endIndex)
+					{
+						// delete, range is encompassed by selection
+						__textEngine.textFormatRanges.splice(i--, 1);
+					}
+					else if (range.end > endIndex && range.start > beginIndex && range.start <= endIndex)
+					{
+						// set start and shift end, beginning of range overlaps selection
+						// replacements use the format to the right of the selection, when beginIndex != endIndex
+						range.start = beginIndex;
+						range.end += offset;
+					}
+					else if (range.start < beginIndex && range.end > beginIndex && range.end <= endIndex)
+					{
+						// set end, end of range overlaps selection
+						range.end = beginIndex;
 					}
 				}
 
-				__textEngine.getBounds();
+				i++;
 			}
 
-			__layoutDirty = false;
-
-			setSelection(__selectionIndex, __caretIndex);
-		}
-	}
-
-	@:noCompletion private function __updateScrollH():Void
-	{
-		__updateLayout();
-
-		if (textWidth <= width - 4)
-		{
-			scrollH = 0;
-			return;
-		}
-
-		var tempScrollH = scrollH;
-
-		// margins are ignored here
-
-		if (__caretIndex == 0 || getLineOffset(getLineIndexOfChar(__caretIndex)) == __caretIndex)
-		{
-			// first index in a line is always at 0 scrollH
-			tempScrollH = 0;
-		}
-		else
-		{
-			var caret = Rectangle.__pool.get();
-			var written = false;
-
-			if (__caretIndex < __text.length)
+			// robust catchers for myriad edge cases
+			if (__textEngine.textFormatRanges.length == 0)
 			{
-				written = __getCharBoundaries(__caretIndex, caret);
+				// add DTF, all format ranges were deleted
+				__textEngine.textFormatRanges.push(new TextFormatRange(defaultTextFormat.clone(), 0, newText.length));
 			}
-			if (!written)
+			else if (beginIndex == endIndex && __textEngine.textFormatRanges[0].start > 0)
 			{
-				// \n and \r don't have character boundaries, as well as when caretIndex == text.length
-				// written doesn't need to be checked again, covered earlier
-				__getCharBoundaries(__caretIndex - 1, caret);
-				caret.x += caret.width; // shift rectangle to where the caret is
+				// prefix DTF, text was inserted without a format
+				__textEngine.textFormatRanges.unshift(new TextFormatRange(defaultTextFormat.clone(), 0, __textEngine.textFormatRanges[0].start));
+			}
+			else if (beginIndex != endIndex && __textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end < __text.length)
+			{
+				// append DTF, text was replaced without a format
+				__textEngine.textFormatRanges.push(new TextFormatRange(defaultTextFormat.clone(),
+					__textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end, __text.length));
 			}
 
-			while (caret.x < tempScrollH && tempScrollH > 0)
+			__selectionIndex = __caretIndex = beginIndex + newText.length;
+
+			__dirty = true;
+			__layoutDirty = true;
+			__setRenderDirty();
+		}
+
+		@:noCompletion private function __startCursorTimer():Void
+		{
+			if (type == INPUT)
 			{
-				tempScrollH -= 24;
-			}
-			while (caret.x > tempScrollH + width - 4)
-			{
-				tempScrollH += 24;
-			}
-
-			Rectangle.__pool.release(caret);
-		}
-
-		if (tempScrollH > 0 && type != INPUT)
-		{
-			// input text leaves some room after scrolling to the last character in a line. dynamic text does not
-			var lineLength = getLineLength(getLineIndexOfChar(__caretIndex));
-			if (scrollH + width - 4 > lineLength)
-			{
-				scrollH = Math.ceil(lineLength - width + 4);
-			}
-		}
-
-		if (tempScrollH < 0)
-		{
-			scrollH = 0;
-		}
-		else if (tempScrollH > maxScrollH)
-		{
-			scrollH = maxScrollH;
-		}
-		else
-		{
-			scrollH = tempScrollH;
-		}
-
-		// TODO: Handle drag select
-	}
-
-	@:noCompletion private function __updateScrollV():Void
-	{
-		__updateLayout();
-
-		if (textHeight <= height - 4)
-		{
-			scrollV = 1;
-			return;
-		}
-
-		var lineIndex = getLineIndexOfChar(__caretIndex);
-
-		if (lineIndex == -1 && __caretIndex > 0)
-		{
-			// new paragraph
-			lineIndex = getLineIndexOfChar(__caretIndex - 1) + 1;
-		}
-
-		if (lineIndex + 1 < scrollV)
-		{
-			scrollV = lineIndex + 1;
-		}
-		else if (lineIndex + 1 > bottomScrollV)
-		{
-			var i = lineIndex, tempHeight = 0.0;
-
-			if (i >= __textEngine.lineHeights.length)
-			{
-				i = __textEngine.lineHeights.length - 1;
-			}
-
-			while (i >= 0)
-			{
-				tempHeight += __textEngine.lineHeights[i];
-
-				if (tempHeight > height - 4)
+				if (__inputEnabled)
 				{
-					i += (tempHeight - height < 0 ? 1 : 2);
-					break;
+					__cursorTimer = Timer.delay(__startCursorTimer, 600);
+					__showCursor = !__showCursor;
 				}
-				i--;
+				__dirty = true;
+				__setRenderDirty();
 			}
-			/*	while (i >= 0)
-				{
-					if (tempHeight + __textEngine.lineHeights[i] <= height - 4)
-					{
-						tempHeight += __textEngine.lineHeights[i];
-						i--;
-					}
-					else
-						break;
-			}*/
-			scrollV = i;
-		}
-		else
-		{
-			// TODO: can this be avoided? this doesn't need to hit the setter each time, just a couple times
-
-			scrollV = scrollV;
-		}
-	}
-
-	@:noCompletion private function __updateMouseDrag():Void
-	{
-		if (stage == null) return;
-
-		if (mouseX > this.width - 1)
-		{
-			scrollH += Std.int(Math.max(Math.min((mouseX - this.width) * .1, 10), 1));
-		}
-		else if (mouseX < 1)
-		{
-			scrollH -= Std.int(Math.max(Math.min(mouseX * -.1, 10), 1));
-		}
-
-		__mouseScrollVCounter++;
-
-		if (__mouseScrollVCounter > stage.frameRate / 10)
-		{
-			if (mouseY > this.height - 2)
+			else if (selectable)
 			{
-				scrollV = Std.int(Math.min(scrollV + Math.max(Math.min((mouseY - this.height) * .03, 5), 1), maxScrollV));
+				__dirty = true;
+				__setRenderDirty();
 			}
-			else if (mouseY < 2)
-			{
-				scrollV -= Std.int(Math.max(Math.min(mouseY * -.03, 5), 1));
-			}
-			__mouseScrollVCounter = 0;
 		}
-		stage_onMouseMove(null);
-	}
 
-	@:noCompletion private function __updateText(value:String):Void
-	{
-		#if (js && html5)
-		if (DisplayObject.__supportDOM && __renderedOnCanvasWhileOnDOM)
+		@:noCompletion private function __startTextInput():Void
 		{
-			__forceCachedBitmapUpdate = __text != value;
-		}
-		#end
-
-		// applies maxChars and restrict on text
-
-		__textEngine.text = value;
-		__text = __textEngine.text;
-
-		if (stage != null && stage.focus == this)
-		{
-			// when selected, the current selection should be kept, but it
-			// should also be adjusted, if the new text is not long enough
-			if (__text.length < __selectionIndex)
-			{
-				__selectionIndex = __text.length;
-			}
-			if (__text.length < __caretIndex)
+			if (__caretIndex < 0)
 			{
 				__caretIndex = __text.length;
+				__selectionIndex = __caretIndex;
+			}
+
+			var enableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
+
+			if (enableInput)
+			{
+				__enableInput();
 			}
 		}
-		else
+
+		@:noCompletion private function __stopCursorTimer():Void
 		{
-			// setting text or htmlText clears the current selection
-			// but they actually clear it differently
-			if (__isHTML)
+			if (__cursorTimer != null)
 			{
-				__selectionIndex = __caretIndex = __text.length;
+				__cursorTimer.stop();
+				__cursorTimer = null;
+			}
+
+			if (__showCursor)
+			{
+				__showCursor = false;
+				__dirty = true;
+				__setRenderDirty();
+			}
+		}
+
+		@:noCompletion private function __stopTextInput():Void
+		{
+			var disableInput = #if (js && html5) (DisplayObject.__supportDOM ? __renderedOnCanvasWhileOnDOM : true) #else true #end;
+
+			if (disableInput)
+			{
+				__disableInput();
+			}
+		}
+
+		@:noCompletion private function __updateLayout():Void
+		{
+			if (__layoutDirty)
+			{
+				var cacheWidth = __textEngine.width;
+				__textEngine.update();
+
+				if (__textEngine.autoSize != NONE)
+				{
+					if (__textEngine.width != cacheWidth)
+					{
+						switch (__textEngine.autoSize)
+						{
+							case RIGHT:
+								x += cacheWidth - __textEngine.width;
+
+							case CENTER:
+								x += (cacheWidth - __textEngine.width) / 2;
+
+							default:
+						}
+					}
+
+					__textEngine.getBounds();
+				}
+
+				__layoutDirty = false;
+
+				setSelection(__selectionIndex, __caretIndex);
+			}
+		}
+
+		@:noCompletion private function __updateScrollH():Void
+		{
+			__updateLayout();
+
+			if (textWidth <= width - 4)
+			{
+				scrollH = 0;
+				return;
+			}
+
+			var tempScrollH = scrollH;
+
+			// margins are ignored here
+
+			if (__caretIndex == 0 || getLineOffset(getLineIndexOfChar(__caretIndex)) == __caretIndex)
+			{
+				// first index in a line is always at 0 scrollH
+				tempScrollH = 0;
 			}
 			else
 			{
-				__selectionIndex = 0;
-				__caretIndex = 0;
+				var caret = Rectangle.__pool.get();
+				var written = false;
+
+				if (__caretIndex < __text.length)
+				{
+					written = __getCharBoundaries(__caretIndex, caret);
+				}
+				if (!written)
+				{
+					// \n and \r don't have character boundaries, as well as when caretIndex == text.length
+					// written doesn't need to be checked again, covered earlier
+					__getCharBoundaries(__caretIndex - 1, caret);
+					caret.x += caret.width; // shift rectangle to where the caret is
+				}
+
+				while (caret.x < tempScrollH && tempScrollH > 0)
+				{
+					tempScrollH -= 24;
+				}
+				while (caret.x > tempScrollH + width - 4)
+				{
+					tempScrollH += 24;
+				}
+
+				Rectangle.__pool.release(caret);
 			}
-		}
 
-		if (!__displayAsPassword #if (js && html5) || (DisplayObject.__supportDOM && !__renderedOnCanvasWhileOnDOM) #end)
-		{
-			__textEngine.text = __text;
-		}
-		else
-		{
-			var length = text.length;
-			var mask = "";
-
-			for (i in 0...length)
+			if (tempScrollH > 0 && type != INPUT)
 			{
-				mask += "*";
+				// input text leaves some room after scrolling to the last character in a line. dynamic text does not
+				var lineLength = getLineLength(getLineIndexOfChar(__caretIndex));
+				if (scrollH + width - 4 > lineLength)
+				{
+					scrollH = Math.ceil(lineLength - width + 4);
+				}
 			}
 
-			__textEngine.text = mask;
-		}
-	}
+			if (tempScrollH < 0)
+			{
+				scrollH = 0;
+			}
+			else if (tempScrollH > maxScrollH)
+			{
+				scrollH = maxScrollH;
+			}
+			else
+			{
+				scrollH = tempScrollH;
+			}
 
-	@:noCompletion private override function __updateTransforms(overrideTransform:Matrix = null):Void
-	{
-		super.__updateTransforms(overrideTransform);
-		__renderTransform.__translateTransformed(__offsetX, __offsetY);
-	}
-
-	// Getters & Setters
-	@:noCompletion private function get_antiAliasType():AntiAliasType
-	{
-		return __textEngine.antiAliasType;
-	}
-
-	@:noCompletion private function set_antiAliasType(value:AntiAliasType):AntiAliasType
-	{
-		if (value != __textEngine.antiAliasType)
-		{
-			// __dirty = true;
+			// TODO: Handle drag select
 		}
 
-		return __textEngine.antiAliasType = value;
-	}
-
-	@:noCompletion private function get_autoSize():TextFieldAutoSize
-	{
-		return __textEngine.autoSize;
-	}
-
-	@:noCompletion private function set_autoSize(value:TextFieldAutoSize):TextFieldAutoSize
-	{
-		if (value != __textEngine.autoSize)
+		@:noCompletion private function __updateScrollV():Void
 		{
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
+			__updateLayout();
+
+			if (textHeight <= height - 4)
+			{
+				scrollV = 1;
+				return;
+			}
+
+			var lineIndex = getLineIndexOfChar(__caretIndex);
+
+			if (lineIndex == -1 && __caretIndex > 0)
+			{
+				// new paragraph
+				lineIndex = getLineIndexOfChar(__caretIndex - 1) + 1;
+			}
+
+			if (lineIndex + 1 < scrollV)
+			{
+				scrollV = lineIndex + 1;
+			}
+			else if (lineIndex + 1 > bottomScrollV)
+			{
+				var i = lineIndex, tempHeight = 0.0;
+
+				if (i >= __textEngine.lineHeights.length)
+				{
+					i = __textEngine.lineHeights.length - 1;
+				}
+
+				while (i >= 0)
+				{
+					tempHeight += __textEngine.lineHeights[i];
+
+					if (tempHeight > height - 4)
+					{
+						i += (tempHeight - height < 0 ? 1 : 2);
+						break;
+					}
+					i--;
+				}
+				/*	while (i >= 0)
+					{
+						if (tempHeight + __textEngine.lineHeights[i] <= height - 4)
+						{
+							tempHeight += __textEngine.lineHeights[i];
+							i--;
+						}
+						else
+							break;
+				}*/
+				scrollV = i;
+			}
+			else
+			{
+				// TODO: can this be avoided? this doesn't need to hit the setter each time, just a couple times
+
+				scrollV = scrollV;
+			}
 		}
 
-		return __textEngine.autoSize = value;
-	}
-
-	@:noCompletion private function get_background():Bool
-	{
-		return __textEngine.background;
-	}
-
-	@:noCompletion private function set_background(value:Bool):Bool
-	{
-		if (value != __textEngine.background)
+		@:noCompletion private function __updateMouseDrag():Void
 		{
-			__dirty = true;
-			__setRenderDirty();
+			if (stage == null) return;
+
+			if (mouseX > this.width - 1)
+			{
+				scrollH += Std.int(Math.max(Math.min((mouseX - this.width) * .1, 10), 1));
+			}
+			else if (mouseX < 1)
+			{
+				scrollH -= Std.int(Math.max(Math.min(mouseX * -.1, 10), 1));
+			}
+
+			__mouseScrollVCounter++;
+
+			if (__mouseScrollVCounter > stage.frameRate / 10)
+			{
+				if (mouseY > this.height - 2)
+				{
+					scrollV = Std.int(Math.min(scrollV + Math.max(Math.min((mouseY - this.height) * .03, 5), 1), maxScrollV));
+				}
+				else if (mouseY < 2)
+				{
+					scrollV -= Std.int(Math.max(Math.min(mouseY * -.03, 5), 1));
+				}
+				__mouseScrollVCounter = 0;
+			}
+			stage_onMouseMove(null);
 		}
 
-		return __textEngine.background = value;
-	}
-
-	@:noCompletion private function get_backgroundColor():Int
-	{
-		return __textEngine.backgroundColor;
-	}
-
-	@:noCompletion private function set_backgroundColor(value:Int):Int
-	{
-		if (value != __textEngine.backgroundColor)
+		@:noCompletion private function __updateText(value:String):Void
 		{
-			__dirty = true;
-			__setRenderDirty();
-		}
+			#if (js && html5)
+			if (DisplayObject.__supportDOM && __renderedOnCanvasWhileOnDOM)
+			{
+				__forceCachedBitmapUpdate = __text != value;
+			}
+			#end
 
-		return __textEngine.backgroundColor = value;
-	}
+			// applies maxChars and restrict on text
 
-	@:noCompletion private function get_border():Bool
-	{
-		return __textEngine.border;
-	}
+			__textEngine.text = value;
+			__text = __textEngine.text;
 
-	@:noCompletion private function set_border(value:Bool):Bool
-	{
-		if (value != __textEngine.border)
-		{
-			__dirty = true;
-			__setRenderDirty();
-		}
-
-		return __textEngine.border = value;
-	}
-
-	@:noCompletion private function get_borderColor():Int
-	{
-		return __textEngine.borderColor;
-	}
-
-	@:noCompletion private function set_borderColor(value:Int):Int
-	{
-		if (value != __textEngine.borderColor)
-		{
-			__dirty = true;
-			__setRenderDirty();
-		}
-
-		return __textEngine.borderColor = value;
-	}
-
-	@:noCompletion private function get_bottomScrollV():Int
-	{
-		__updateLayout();
-
-		return __textEngine.bottomScrollV;
-	}
-
-	@:noCompletion private function get_caretIndex():Int
-	{
-		return __caretIndex;
-	}
-
-	@:noCompletion private function get_defaultTextFormat():TextFormat
-	{
-		return __textFormat.clone();
-	}
-
-	@:noCompletion private function set_defaultTextFormat(value:TextFormat):TextFormat
-	{
-		__textFormat.__merge(value);
-
-		__layoutDirty = true;
-		__dirty = true;
-		__setRenderDirty();
-
-		return value;
-	}
-
-	@:noCompletion private function get_displayAsPassword():Bool
-	{
-		return __displayAsPassword;
-	}
-
-	@:noCompletion private function set_displayAsPassword(value:Bool):Bool
-	{
-		if (value != __displayAsPassword)
-		{
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
-
-			__displayAsPassword = value;
-			__updateText(__text);
-		}
-
-		return value;
-	}
-
-	@:noCompletion private function get_embedFonts():Bool
-	{
-		return __textEngine.embedFonts;
-	}
-
-	@:noCompletion private function set_embedFonts(value:Bool):Bool
-	{
-		// if (value != __textEngine.embedFonts) {
-		//
-		// __dirty = true;
-		// __layoutDirty = true;
-		//
-		// }
-
-		return __textEngine.embedFonts = value;
-	}
-
-	@:noCompletion private function get_gridFitType():GridFitType
-	{
-		return __textEngine.gridFitType;
-	}
-
-	@:noCompletion private function set_gridFitType(value:GridFitType):GridFitType
-	{
-		// if (value != __textEngine.gridFitType) {
-		//
-		// __dirty = true;
-		// __layoutDirty = true;
-		//
-		// }
-
-		return __textEngine.gridFitType = value;
-	}
-
-	@:noCompletion private override function get_height():Float
-	{
-		__updateLayout();
-		return __textEngine.height * Math.abs(scaleY);
-	}
-
-	@:noCompletion private override function set_height(value:Float):Float
-	{
-		if (value != __textEngine.height)
-		{
-			__setTransformDirty();
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
-
-			__textEngine.height = value;
-		}
-
-		return __textEngine.height * Math.abs(scaleY);
-	}
-
-	@:noCompletion private function get_htmlText():String
-	{
-		// #if (js && html5)
-		return __isHTML ? __htmlText : __text;
-		// #else
-		// return __text;
-		// #end
-	}
-
-	@:noCompletion private function set_htmlText(value:String):String
-	{
-		if (!__isHTML || __text != value)
-		{
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
-		}
-
-		__isHTML = true;
-
-		// TODO: Should this run before or after setting raw __htmlText?
-		if (condenseWhite)
-		{
-			value = ~/\s+/g.replace(value, " ");
-		}
-
-		__htmlText = value;
-		// TODO: Do not run the following if __htmlText is unchanged?
-
-		value = HTMLParser.parse(value, multiline, __styleSheet, __textFormat, __textEngine.textFormatRanges);
-
-		#if (js && html5)
-		// if (DisplayObject.__supportDOM)
-		// {
-		// 	// TODO: Why is this parsing text format ranges, only to ignore them?
-		// 	// Should this skip the parser entirely?
-		// 	if (__textEngine.textFormatRanges.length > 1)
-		// 	{
-		// 		__textEngine.textFormatRanges.splice(1, __textEngine.textFormatRanges.length - 1);
-		// 	}
-
-		// 	var range = __textEngine.textFormatRanges[0];
-		// 	range.format = __textFormat;
-		// 	range.start = 0;
-
-		// 	if (__renderedOnCanvasWhileOnDOM)
-		// 	{
-		// 		range.end = value.length;
-		// 		__updateText(value);
-		// 	}
-		// 	else
-		// 	{
-		// 		range.end = __htmlText.length;
-		// 		__updateText(__htmlText);
-		// 	}
-		// }
-		// else
-		{
-			__updateText(value);
-		}
-		#else
-		__updateText(value);
-		#end
-
-		return value;
-	}
-
-	@:noCompletion private function get_length():Int
-	{
-		if (__text != null)
-		{
-			return __text.length;
-		}
-
-		return 0;
-	}
-
-	@:noCompletion private function get_maxChars():Int
-	{
-		return __textEngine.maxChars;
-	}
-
-	@:noCompletion private function set_maxChars(value:Int):Int
-	{
-		if (value != __textEngine.maxChars)
-		{
-			__textEngine.maxChars = value;
-
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
-		}
-
-		return value;
-	}
-
-	@:noCompletion private function get_maxScrollH():Int
-	{
-		__updateLayout();
-
-		return __textEngine.maxScrollH;
-	}
-
-	@:noCompletion private function get_maxScrollV():Int
-	{
-		__updateLayout();
-
-		return __textEngine.maxScrollV;
-	}
-
-	@:noCompletion private function get_mouseWheelEnabled():Bool
-	{
-		return __mouseWheelEnabled;
-	}
-
-	@:noCompletion private function set_mouseWheelEnabled(value:Bool):Bool
-	{
-		return __mouseWheelEnabled = value;
-	}
-
-	@:noCompletion private function get_multiline():Bool
-	{
-		return __textEngine.multiline;
-	}
-
-	@:noCompletion private function set_multiline(value:Bool):Bool
-	{
-		return __textEngine.multiline = value;
-	}
-
-	@:noCompletion private function get_numLines():Int
-	{
-		__updateLayout();
-
-		return __textEngine.numLines;
-	}
-
-	@:noCompletion private function get_restrict():String
-	{
-		return __textEngine.restrict;
-	}
-
-	@:noCompletion private function set_restrict(value:String):String
-	{
-		if (__textEngine.restrict != value)
-		{
-			__textEngine.restrict = value;
-			__updateText(__text);
-		}
-
-		return value;
-	}
-
-	@:noCompletion private function get_scrollH():Int
-	{
-		return __textEngine.scrollH;
-	}
-
-	@:noCompletion private function set_scrollH(value:Int):Int
-	{
-		__updateLayout();
-
-		if (value > __textEngine.maxScrollH) value = __textEngine.maxScrollH;
-		if (value < 0) value = 0;
-
-		if (value != __textEngine.scrollH)
-		{
-			__dirty = true;
-			__setRenderDirty();
-			__textEngine.scrollH = value;
-			dispatchEvent(new Event(Event.SCROLL));
-		}
-
-		return __textEngine.scrollH;
-	}
-
-	@:noCompletion private function get_scrollV():Int
-	{
-		return __textEngine.scrollV;
-	}
-
-	@:noCompletion private function set_scrollV(value:Int):Int
-	{
-		__updateLayout();
-
-		if (value != __textEngine.scrollV || __textEngine.scrollV == 0)
-		{
-			__dirty = true;
-			__setRenderDirty();
-			__textEngine.scrollV = value;
-			dispatchEvent(new Event(Event.SCROLL));
-		}
-
-		return __textEngine.scrollV;
-	}
-
-	@:noCompletion private function get_selectable():Bool
-	{
-		return __textEngine.selectable;
-	}
-
-	@:noCompletion private function set_selectable(value:Bool):Bool
-	{
-		if (value != __textEngine.selectable && type == INPUT)
-		{
 			if (stage != null && stage.focus == this)
 			{
-				__startTextInput();
+				// when selected, the current selection should be kept, but it
+				// should also be adjusted, if the new text is not long enough
+				if (__text.length < __selectionIndex)
+				{
+					__selectionIndex = __text.length;
+				}
+				if (__text.length < __caretIndex)
+				{
+					__caretIndex = __text.length;
+				}
 			}
-			else if (!value)
+			else
 			{
-				__stopTextInput();
+				// setting text or htmlText clears the current selection
+				// but they actually clear it differently
+				if (__isHTML)
+				{
+					__selectionIndex = __caretIndex = __text.length;
+				}
+				else
+				{
+					__selectionIndex = 0;
+					__caretIndex = 0;
+				}
+			}
+
+			if (!__displayAsPassword #if (js && html5) || (DisplayObject.__supportDOM && !__renderedOnCanvasWhileOnDOM) #end)
+			{
+				__textEngine.text = __text;
+			}
+			else
+			{
+				var length = text.length;
+				var mask = "";
+
+				for (i in 0...length)
+				{
+					mask += "*";
+				}
+
+				__textEngine.text = mask;
 			}
 		}
 
-		return __textEngine.selectable = value;
-	}
-
-	@:noCompletion private function get_selectionBeginIndex():Int
-	{
-		return Std.int(Math.min(__caretIndex, __selectionIndex));
-	}
-
-	@:noCompletion private function get_selectionEndIndex():Int
-	{
-		return Std.int(Math.max(__caretIndex, __selectionIndex));
-	}
-
-	@:noCompletion private function get_sharpness():Float
-	{
-		return __textEngine.sharpness;
-	}
-
-	@:noCompletion private function set_sharpness(value:Float):Float
-	{
-		if (value != __textEngine.sharpness)
+		@:noCompletion private override function __updateTransforms(overrideTransform:Matrix = null):Void
 		{
-			__dirty = true;
-			__setRenderDirty();
+			super.__updateTransforms(overrideTransform);
+			__renderTransform.__translateTransformed(__offsetX, __offsetY);
 		}
 
-		return __textEngine.sharpness = value;
-	}
-
-	@:noCompletion private function get_styleSheet():StyleSheet
-	{
-		return __styleSheet;
-	}
-
-	@:noCompletion private function set_styleSheet(value:StyleSheet):StyleSheet
-	{
-		if (__styleSheet != null && value == null)
+		// Getters & Setters
+		@:noCompletion private function get_antiAliasType():AntiAliasType
 		{
-			// TODO: Bake stylesheet into htmlText property
-			// TODO: Actually, does this already happen?
+			return __textEngine.antiAliasType;
 		}
-		else if (value != null)
+
+		@:noCompletion private function set_antiAliasType(value:AntiAliasType):AntiAliasType
 		{
-			// TODO: Cleaner approach?
-			// TODO: Support for display and a:link, a:hover (etc) in renderer
-			if (__isHTML && value != __styleSheet)
+			if (value != __textEngine.antiAliasType)
+			{
+				// __dirty = true;
+			}
+
+			return __textEngine.antiAliasType = value;
+		}
+
+		@:noCompletion private function get_autoSize():TextFieldAutoSize
+		{
+			return __textEngine.autoSize;
+		}
+
+		@:noCompletion private function set_autoSize(value:TextFieldAutoSize):TextFieldAutoSize
+		{
+			if (value != __textEngine.autoSize)
 			{
 				__dirty = true;
 				__layoutDirty = true;
 				__setRenderDirty();
-				set_htmlText(__htmlText);
 			}
 
-			// TODO: Does the type change, or is the type value ignored?
-			type = DYNAMIC;
-		}
-		return __styleSheet = value;
-	}
-
-	@:noCompletion private override function get_tabEnabled():Bool
-	{
-		return (__tabEnabled == null ? __textEngine.type == INPUT : __tabEnabled);
-	}
-
-	@:noCompletion private function get_text():String
-	{
-		return __text;
-	}
-
-	@:noCompletion private function set_text(value:String):String
-	{
-		if (__styleSheet != null)
-		{
-			return set_htmlText(value);
+			return __textEngine.autoSize = value;
 		}
 
-		if (__isHTML || __text != value)
+		@:noCompletion private function get_background():Bool
 		{
-			__dirty = true;
+			return __textEngine.background;
+		}
+
+		@:noCompletion private function set_background(value:Bool):Bool
+		{
+			if (value != __textEngine.background)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			return __textEngine.background = value;
+		}
+
+		@:noCompletion private function get_backgroundColor():Int
+		{
+			return __textEngine.backgroundColor;
+		}
+
+		@:noCompletion private function set_backgroundColor(value:Int):Int
+		{
+			if (value != __textEngine.backgroundColor)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			return __textEngine.backgroundColor = value;
+		}
+
+		@:noCompletion private function get_border():Bool
+		{
+			return __textEngine.border;
+		}
+
+		@:noCompletion private function set_border(value:Bool):Bool
+		{
+			if (value != __textEngine.border)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			return __textEngine.border = value;
+		}
+
+		@:noCompletion private function get_borderColor():Int
+		{
+			return __textEngine.borderColor;
+		}
+
+		@:noCompletion private function set_borderColor(value:Int):Int
+		{
+			if (value != __textEngine.borderColor)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			return __textEngine.borderColor = value;
+		}
+
+		@:noCompletion private function get_bottomScrollV():Int
+		{
+			__updateLayout();
+
+			return __textEngine.bottomScrollV;
+		}
+
+		@:noCompletion private function get_caretIndex():Int
+		{
+			return __caretIndex;
+		}
+
+		@:noCompletion private function get_defaultTextFormat():TextFormat
+		{
+			return __textFormat.clone();
+		}
+
+		@:noCompletion private function set_defaultTextFormat(value:TextFormat):TextFormat
+		{
+			__textFormat.__merge(value);
+
 			__layoutDirty = true;
+			__dirty = true;
 			__setRenderDirty();
-		}
-		else
-		{
+
 			return value;
 		}
 
-		if (__textEngine.textFormatRanges.length > 1)
+		@:noCompletion private function get_displayAsPassword():Bool
 		{
-			__textEngine.textFormatRanges.splice(1, __textEngine.textFormatRanges.length - 1);
+			return __displayAsPassword;
 		}
 
-		var utfValue:UTF8String = value;
-		var range = __textEngine.textFormatRanges[0];
-		range.format = __textFormat;
-		range.start = 0;
-		range.end = utfValue.length;
-
-		__isHTML = false;
-
-		__updateText(value);
-
-		return value;
-	}
-
-	@:noCompletion private function get_textColor():Int
-	{
-		return __textFormat.color;
-	}
-
-	@:noCompletion private function set_textColor(value:Int):Int
-	{
-		if (value != __textFormat.color)
+		@:noCompletion private function set_displayAsPassword(value:Bool):Bool
 		{
-			__dirty = true;
-			__setRenderDirty();
-		}
-
-		for (range in __textEngine.textFormatRanges)
-		{
-			range.format.color = value;
-		}
-
-		return __textFormat.color = value;
-	}
-
-	@:noCompletion private function get_textWidth():Float
-	{
-		__updateLayout();
-		return __textEngine.textWidth;
-	}
-
-	@:noCompletion private function get_textHeight():Float
-	{
-		__updateLayout();
-		return __textEngine.textHeight;
-	}
-
-	@:noCompletion private function get_type():TextFieldType
-	{
-		return __textEngine.type;
-	}
-
-	@:noCompletion private function set_type(value:TextFieldType):TextFieldType
-	{
-		if (__styleSheet != null)
-		{
-			// TODO: Is this the behavior of Flash Player, or is type simply
-			// ignored when the StyleSheet is present? (seems likely?)
-			value = DYNAMIC;
-		}
-
-		if (value != __textEngine.type)
-		{
-			// set type here instead of in return below because this_onFocusIn()
-			// needs to know the correct type
-			__textEngine.type = value;
-			if (value == TextFieldType.INPUT)
+			if (value != __displayAsPassword)
 			{
-				addEventListener(Event.ADDED_TO_STAGE, this_onAddedToStage);
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
 
-				this_onFocusIn(null);
-				__textEngine.__useIntAdvances = true;
+				__displayAsPassword = value;
+				__updateText(__text);
+			}
+
+			return value;
+		}
+
+		@:noCompletion private function get_embedFonts():Bool
+		{
+			return __textEngine.embedFonts;
+		}
+
+		@:noCompletion private function set_embedFonts(value:Bool):Bool
+		{
+			// if (value != __textEngine.embedFonts) {
+			//
+			// __dirty = true;
+			// __layoutDirty = true;
+			//
+			// }
+
+			return __textEngine.embedFonts = value;
+		}
+
+		@:noCompletion private function get_gridFitType():GridFitType
+		{
+			return __textEngine.gridFitType;
+		}
+
+		@:noCompletion private function set_gridFitType(value:GridFitType):GridFitType
+		{
+			// if (value != __textEngine.gridFitType) {
+			//
+			// __dirty = true;
+			// __layoutDirty = true;
+			//
+			// }
+
+			return __textEngine.gridFitType = value;
+		}
+
+		@:noCompletion private override function get_height():Float
+		{
+			__updateLayout();
+			return __textEngine.height * Math.abs(scaleY);
+		}
+
+		@:noCompletion private override function set_height(value:Float):Float
+		{
+			if (value != __textEngine.height)
+			{
+				__setTransformDirty();
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
+
+				__textEngine.height = value;
+			}
+
+			return __textEngine.height * Math.abs(scaleY);
+		}
+
+		@:noCompletion private function get_htmlText():String
+		{
+			// #if (js && html5)
+			return __isHTML ? __htmlText : __text;
+			// #else
+			// return __text;
+			// #end
+		}
+
+		@:noCompletion private function set_htmlText(value:String):String
+		{
+			if (!__isHTML || __text != value)
+			{
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
+			}
+
+			__isHTML = true;
+
+			// TODO: Should this run before or after setting raw __htmlText?
+			if (condenseWhite)
+			{
+				value = ~/\s+/g.replace(value, " ");
+			}
+
+			__htmlText = value;
+			// TODO: Do not run the following if __htmlText is unchanged?
+
+			value = HTMLParser.parse(value, multiline, __styleSheet, __textFormat, __textEngine.textFormatRanges);
+
+			#if (js && html5)
+			// if (DisplayObject.__supportDOM)
+			// {
+			// 	// TODO: Why is this parsing text format ranges, only to ignore them?
+			// 	// Should this skip the parser entirely?
+			// 	if (__textEngine.textFormatRanges.length > 1)
+			// 	{
+			// 		__textEngine.textFormatRanges.splice(1, __textEngine.textFormatRanges.length - 1);
+			// 	}
+
+			// 	var range = __textEngine.textFormatRanges[0];
+			// 	range.format = __textFormat;
+			// 	range.start = 0;
+
+			// 	if (__renderedOnCanvasWhileOnDOM)
+			// 	{
+			// 		range.end = value.length;
+			// 		__updateText(value);
+			// 	}
+			// 	else
+			// 	{
+			// 		range.end = __htmlText.length;
+			// 		__updateText(__htmlText);
+			// 	}
+			// }
+			// else
+			{
+				__updateText(value);
+			}
+			#else
+			__updateText(value);
+			#end
+
+			return value;
+		}
+
+		@:noCompletion private function get_length():Int
+		{
+			if (__text != null)
+			{
+				return __text.length;
+			}
+
+			return 0;
+		}
+
+		@:noCompletion private function get_maxChars():Int
+		{
+			return __textEngine.maxChars;
+		}
+
+		@:noCompletion private function set_maxChars(value:Int):Int
+		{
+			if (value != __textEngine.maxChars)
+			{
+				__textEngine.maxChars = value;
+
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
+			}
+
+			return value;
+		}
+
+		@:noCompletion private function get_maxScrollH():Int
+		{
+			__updateLayout();
+
+			return __textEngine.maxScrollH;
+		}
+
+		@:noCompletion private function get_maxScrollV():Int
+		{
+			__updateLayout();
+
+			return __textEngine.maxScrollV;
+		}
+
+		@:noCompletion private function get_mouseWheelEnabled():Bool
+		{
+			return __mouseWheelEnabled;
+		}
+
+		@:noCompletion private function set_mouseWheelEnabled(value:Bool):Bool
+		{
+			return __mouseWheelEnabled = value;
+		}
+
+		@:noCompletion private function get_multiline():Bool
+		{
+			return __textEngine.multiline;
+		}
+
+		@:noCompletion private function set_multiline(value:Bool):Bool
+		{
+			return __textEngine.multiline = value;
+		}
+
+		@:noCompletion private function get_numLines():Int
+		{
+			__updateLayout();
+
+			return __textEngine.numLines;
+		}
+
+		@:noCompletion private function get_restrict():String
+		{
+			return __textEngine.restrict;
+		}
+
+		@:noCompletion private function set_restrict(value:String):String
+		{
+			if (__textEngine.restrict != value)
+			{
+				__textEngine.restrict = value;
+				__updateText(__text);
+			}
+
+			return value;
+		}
+
+		@:noCompletion private function get_scrollH():Int
+		{
+			return __textEngine.scrollH;
+		}
+
+		@:noCompletion private function set_scrollH(value:Int):Int
+		{
+			__updateLayout();
+
+			if (value > __textEngine.maxScrollH) value = __textEngine.maxScrollH;
+			if (value < 0) value = 0;
+
+			if (value != __textEngine.scrollH)
+			{
+				__dirty = true;
+				__setRenderDirty();
+				__textEngine.scrollH = value;
+				dispatchEvent(new Event(Event.SCROLL));
+			}
+
+			return __textEngine.scrollH;
+		}
+
+		@:noCompletion private function get_scrollV():Int
+		{
+			return __textEngine.scrollV;
+		}
+
+		@:noCompletion private function set_scrollV(value:Int):Int
+		{
+			__updateLayout();
+
+			if (value != __textEngine.scrollV || __textEngine.scrollV == 0)
+			{
+				__dirty = true;
+				__setRenderDirty();
+				__textEngine.scrollV = value;
+				dispatchEvent(new Event(Event.SCROLL));
+			}
+
+			return __textEngine.scrollV;
+		}
+
+		@:noCompletion private function get_selectable():Bool
+		{
+			return __textEngine.selectable;
+		}
+
+		@:noCompletion private function set_selectable(value:Bool):Bool
+		{
+			if (value != __textEngine.selectable && type == INPUT)
+			{
+				if (stage != null && stage.focus == this)
+				{
+					__startTextInput();
+				}
+				else if (!value)
+				{
+					__stopTextInput();
+				}
+			}
+
+			return __textEngine.selectable = value;
+		}
+
+		@:noCompletion private function get_selectionBeginIndex():Int
+		{
+			return Std.int(Math.min(__caretIndex, __selectionIndex));
+		}
+
+		@:noCompletion private function get_selectionEndIndex():Int
+		{
+			return Std.int(Math.max(__caretIndex, __selectionIndex));
+		}
+
+		@:noCompletion private function get_sharpness():Float
+		{
+			return __textEngine.sharpness;
+		}
+
+		@:noCompletion private function set_sharpness(value:Float):Float
+		{
+			if (value != __textEngine.sharpness)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			return __textEngine.sharpness = value;
+		}
+
+		@:noCompletion private function get_styleSheet():StyleSheet
+		{
+			return __styleSheet;
+		}
+
+		@:noCompletion private function set_styleSheet(value:StyleSheet):StyleSheet
+		{
+			if (__styleSheet != null && value == null)
+			{
+				// TODO: Bake stylesheet into htmlText property
+				// TODO: Actually, does this already happen?
+			}
+			else if (value != null)
+			{
+				// TODO: Cleaner approach?
+				// TODO: Support for display and a:link, a:hover (etc) in renderer
+				if (__isHTML && value != __styleSheet)
+				{
+					__dirty = true;
+					__layoutDirty = true;
+					__setRenderDirty();
+					set_htmlText(__htmlText);
+				}
+
+				// TODO: Does the type change, or is the type value ignored?
+				type = DYNAMIC;
+			}
+			return __styleSheet = value;
+		}
+
+		@:noCompletion private override function get_tabEnabled():Bool
+		{
+			return (__tabEnabled == null ? __textEngine.type == INPUT : __tabEnabled);
+		}
+
+		@:noCompletion private function get_text():String
+		{
+			return __text;
+		}
+
+		@:noCompletion private function set_text(value:String):String
+		{
+			if (__styleSheet != null)
+			{
+				return set_htmlText(value);
+			}
+
+			if (__isHTML || __text != value)
+			{
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
 			}
 			else
 			{
-				removeEventListener(Event.ADDED_TO_STAGE, this_onAddedToStage);
-
-				__stopTextInput();
-				__textEngine.__useIntAdvances = null;
+				return value;
 			}
 
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
+			if (__textEngine.textFormatRanges.length > 1)
+			{
+				__textEngine.textFormatRanges.splice(1, __textEngine.textFormatRanges.length - 1);
+			}
+
+			var utfValue:UTF8String = value;
+			var range = __textEngine.textFormatRanges[0];
+			range.format = __textFormat;
+			range.start = 0;
+			range.end = utfValue.length;
+
+			__isHTML = false;
+
+			__updateText(value);
+
+			return value;
 		}
 
-		return __textEngine.type;
-	}
-
-	override private function get_width():Float
-	{
-		__updateLayout();
-		return __textEngine.width * Math.abs(__scaleX);
-	}
-
-	override private function set_width(value:Float):Float
-	{
-		if (value != __textEngine.width)
+		@:noCompletion private function get_textColor():Int
 		{
-			__setTransformDirty();
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
-
-			__textEngine.width = value;
+			return __textFormat.color;
 		}
 
-		return __textEngine.width * Math.abs(__scaleX);
-	}
-
-	@:noCompletion private function get_wordWrap():Bool
-	{
-		return __textEngine.wordWrap;
-	}
-
-	@:noCompletion private function set_wordWrap(value:Bool):Bool
-	{
-		if (value != __textEngine.wordWrap)
+		@:noCompletion private function set_textColor(value:Int):Int
 		{
-			__dirty = true;
-			__layoutDirty = true;
-			__setRenderDirty();
+			if (value != __textFormat.color)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			for (range in __textEngine.textFormatRanges)
+			{
+				range.format.color = value;
+			}
+
+			return __textFormat.color = value;
 		}
 
-		return __textEngine.wordWrap = value;
-	}
-
-	@:noCompletion private override function get_x():Float
-	{
-		return __transform.tx + __offsetX;
-	}
-
-	@:noCompletion private override function set_x(value:Float):Float
-	{
-		if (value != __transform.tx + __offsetX) __setTransformDirty();
-		__transform.tx = value - __offsetX;
-		return value;
-	}
-
-	@:noCompletion private override function get_y():Float
-	{
-		return __transform.ty + __offsetY;
-	}
-
-	@:noCompletion private override function set_y(value:Float):Float
-	{
-		if (value != __transform.ty + __offsetY) __setTransformDirty();
-		__transform.ty = value - __offsetY;
-		return value;
-	}
-
-	// Event Handlers
-	@:noCompletion private function stage_onMouseMove(event:MouseEvent):Void
-	{
-		if (stage == null) return;
-
-		if (selectable && __selectionIndex >= 0)
+		@:noCompletion private function get_textWidth():Float
 		{
 			__updateLayout();
-
-			var position = __getPosition(mouseX + scrollH, mouseY);
-
-			if (position != __caretIndex)
-			{
-				__caretIndex = position;
-
-				var setDirty = true;
-
-				#if (js && html5)
-				if (DisplayObject.__supportDOM)
-				{
-					if (__renderedOnCanvasWhileOnDOM)
-					{
-						__forceCachedBitmapUpdate = true;
-					}
-					setDirty = false;
-				}
-				#end
-
-				if (setDirty)
-				{
-					__dirty = true;
-					__setRenderDirty();
-				}
-			}
-		}
-	}
-
-	@:noCompletion private function stage_onMouseUp(event:MouseEvent):Void
-	{
-		var stage:Stage = cast event.currentTarget;
-
-		stage.removeEventListener(Event.ENTER_FRAME, this_onEnterFrame);
-		stage.removeEventListener(MouseEvent.MOUSE_MOVE, stage_onMouseMove);
-		stage.removeEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);
-
-		if (this.stage != stage) return;
-
-		if (stage.focus == this)
-		{
-			__getWorldTransform();
-			__updateLayout();
-
-			var upPos:Int = __getPosition(mouseX + scrollH, mouseY);
-			var leftPos:Int;
-			var rightPos:Int;
-
-			leftPos = Std.int(Math.min(__selectionIndex, upPos));
-			rightPos = Std.int(Math.max(__selectionIndex, upPos));
-
-			__selectionIndex = leftPos;
-			__caretIndex = rightPos;
-
-			if (__inputEnabled)
-			{
-				this_onFocusIn(null);
-
-				__stopCursorTimer();
-				__startCursorTimer();
-
-				#if (js && html5)
-				if (DisplayObject.__supportDOM && __renderedOnCanvasWhileOnDOM)
-				{
-					__forceCachedBitmapUpdate = true;
-				}
-				#end
-			}
-		}
-	}
-
-	@:noCompletion private function this_onAddedToStage(event:Event):Void
-	{
-		this_onFocusIn(null);
-	}
-
-	@:noCompletion private function this_onEnterFrame(e:Event):Void
-	{
-		__updateMouseDrag();
-		// can we use the render loop instead?
-	}
-
-	@:noCompletion private function this_onFocusIn(event:FocusEvent):Void
-	{
-		if (type == INPUT && stage != null && stage.focus == this)
-		{
-			__startTextInput();
-		}
-		else if (type != INPUT && selectable && stage != null && stage.focus == this)
-		{
-			__startCursorTimer();
-		}
-	}
-
-	@:noCompletion private function this_onFocusOut(event:FocusEvent):Void
-	{
-		__stopCursorTimer();
-
-		// even if the related object is another TextField, we should stop
-		// text input. this ensures that any incomplete IME input is committed.
-		__stopTextInput();
-
-		if (__selectionIndex != __caretIndex)
-		{
-			__selectionIndex = __caretIndex;
-			__dirty = true;
-			__setRenderDirty();
-		}
-	}
-
-	@:noCompletion private function this_onKeyDown(event:KeyboardEvent):Void
-	{
-		#if (lime && !openfl_doc_gen)
-		if (selectable && type != INPUT && event.keyCode == Keyboard.C && (event.commandKey || event.ctrlKey))
-		{
-			if (__caretIndex != __selectionIndex)
-			{
-				Clipboard.text = __text.substring(__caretIndex, __selectionIndex);
-			}
-		}
-		#end
-	}
-
-	@:noCompletion private function this_onMouseDown(event:MouseEvent):Void
-	{
-		if (!selectable && type != INPUT) return;
-
-		__updateLayout();
-
-		__caretIndex = __getPosition(mouseX + scrollH, mouseY);
-		__selectionIndex = __caretIndex;
-
-		if (!DisplayObject.__supportDOM)
-		{
-			__dirty = true;
-			__setRenderDirty();
+			return __textEngine.textWidth;
 		}
 
-		// stage could be null if the TextField was removed from stage in an
-		// earlier listener
-		if (stage == null) return;
-		#if !notextselectscroll
-		// Todo: Add flag and implementation for flash scrolling behavior.
-		stage.addEventListener(Event.ENTER_FRAME, this_onEnterFrame);
-		#end
-		stage.addEventListener(MouseEvent.MOUSE_MOVE, stage_onMouseMove);
-		stage.addEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);
-	}
-
-	@:noCompletion private function this_onMouseWheel(event:MouseEvent):Void
-	{
-		if (mouseWheelEnabled)
-		{
-			scrollV = Std.int(Math.min(scrollV - event.delta, maxScrollV));
-		}
-	}
-
-	@:noCompletion private function this_onDoubleClick(event:MouseEvent):Void
-	{
-		if (selectable)
+		@:noCompletion private function get_textHeight():Float
 		{
 			__updateLayout();
+			return __textEngine.textHeight;
+		}
 
-			var delimiters:Array<String> = ['\n', '.', '!', '?', ',', ' ', ';', ':', '(', ')', '-', '_', '/'];
+		@:noCompletion private function get_type():TextFieldType
+		{
+			return __textEngine.type;
+		}
 
-			var txtStr:String = __text;
-			var leftPos:Int = -1;
-			var rightPos:Int = txtStr.length;
-			var pos:Int = 0;
-			var startPos:Int = Std.int(Math.max(__caretIndex, 1));
-			if (txtStr.length > 0 && __caretIndex >= 0 && rightPos >= __caretIndex)
+		@:noCompletion private function set_type(value:TextFieldType):TextFieldType
+		{
+			if (__styleSheet != null)
 			{
-				for (c in delimiters)
-				{
-					pos = txtStr.lastIndexOf(c, startPos - 1);
-					if (pos > leftPos) leftPos = pos + 1;
+				// TODO: Is this the behavior of Flash Player, or is type simply
+				// ignored when the StyleSheet is present? (seems likely?)
+				value = DYNAMIC;
+			}
 
-					pos = txtStr.indexOf(c, startPos);
-					if (pos < rightPos && pos != -1) rightPos = pos;
+			if (value != __textEngine.type)
+			{
+				// set type here instead of in return below because this_onFocusIn()
+				// needs to know the correct type
+				__textEngine.type = value;
+				if (value == TextFieldType.INPUT)
+				{
+					addEventListener(Event.ADDED_TO_STAGE, this_onAddedToStage);
+
+					this_onFocusIn(null);
+					__textEngine.__useIntAdvances = true;
+				}
+				else
+				{
+					removeEventListener(Event.ADDED_TO_STAGE, this_onAddedToStage);
+
+					__stopTextInput();
+					__textEngine.__useIntAdvances = null;
 				}
 
-				if (leftPos != rightPos)
-				{
-					setSelection(leftPos, rightPos);
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
+			}
 
-					var setDirty:Bool = true;
-					#if openfl_html5
+			return __textEngine.type;
+		}
+
+		override private function get_width():Float
+		{
+			__updateLayout();
+			return __textEngine.width * Math.abs(__scaleX);
+		}
+
+		override private function set_width(value:Float):Float
+		{
+			if (value != __textEngine.width)
+			{
+				__setTransformDirty();
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
+
+				__textEngine.width = value;
+			}
+
+			return __textEngine.width * Math.abs(__scaleX);
+		}
+
+		@:noCompletion private function get_wordWrap():Bool
+		{
+			return __textEngine.wordWrap;
+		}
+
+		@:noCompletion private function set_wordWrap(value:Bool):Bool
+		{
+			if (value != __textEngine.wordWrap)
+			{
+				__dirty = true;
+				__layoutDirty = true;
+				__setRenderDirty();
+			}
+
+			return __textEngine.wordWrap = value;
+		}
+
+		@:noCompletion private override function get_x():Float
+		{
+			return __transform.tx + __offsetX;
+		}
+
+		@:noCompletion private override function set_x(value:Float):Float
+		{
+			if (value != __transform.tx + __offsetX) __setTransformDirty();
+			__transform.tx = value - __offsetX;
+			return value;
+		}
+
+		@:noCompletion private override function get_y():Float
+		{
+			return __transform.ty + __offsetY;
+		}
+
+		@:noCompletion private override function set_y(value:Float):Float
+		{
+			if (value != __transform.ty + __offsetY) __setTransformDirty();
+			__transform.ty = value - __offsetY;
+			return value;
+		}
+
+		// Event Handlers
+		@:noCompletion private function stage_onMouseMove(event:MouseEvent):Void
+		{
+			if (stage == null) return;
+
+			if (selectable && __selectionIndex >= 0)
+			{
+				__updateLayout();
+
+				var position = __getPosition(mouseX + scrollH, mouseY);
+
+				if (position != __caretIndex)
+				{
+					__caretIndex = position;
+
+					var setDirty = true;
+
+					#if (js && html5)
 					if (DisplayObject.__supportDOM)
 					{
 						if (__renderedOnCanvasWhileOnDOM)
@@ -3358,6 +3176,7 @@ class TextField extends InteractiveObject
 						setDirty = false;
 					}
 					#end
+
 					if (setDirty)
 					{
 						__dirty = true;
@@ -3366,247 +3185,420 @@ class TextField extends InteractiveObject
 				}
 			}
 		}
-	}
 
-	#if lime
-	@:noCompletion private function window_onKeyDown(key:KeyCode, modifier:KeyModifier):Void
-	{
-		inline function isModifierPressed()
-			return #if mac modifier.metaKey #elseif js(modifier.metaKey || modifier.ctrlKey) #else (modifier.ctrlKey && !modifier.altKey) #end;
-
-		switch (key)
+		@:noCompletion private function stage_onMouseUp(event:MouseEvent):Void
 		{
-			case RETURN, NUMPAD_ENTER:
-				if (__textEngine.multiline)
+			var stage:Stage = cast event.currentTarget;
+
+			stage.removeEventListener(Event.ENTER_FRAME, this_onEnterFrame);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, stage_onMouseMove);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);
+
+			if (this.stage != stage) return;
+
+			if (stage.focus == this)
+			{
+				__getWorldTransform();
+				__updateLayout();
+
+				var upPos:Int = __getPosition(mouseX + scrollH, mouseY);
+				var leftPos:Int;
+				var rightPos:Int;
+
+				leftPos = Std.int(Math.min(__selectionIndex, upPos));
+				rightPos = Std.int(Math.max(__selectionIndex, upPos));
+
+				__selectionIndex = leftPos;
+				__caretIndex = rightPos;
+
+				if (__inputEnabled)
 				{
-					var te = new TextEvent(TextEvent.TEXT_INPUT, true, true, "\n");
+					this_onFocusIn(null);
 
-					dispatchEvent(te);
-
-					if (!te.isDefaultPrevented())
-					{
-						__replaceSelectedText("\n", true);
-
-						dispatchEvent(new Event(Event.CHANGE, true));
-					}
-				}
-				else
-				{
 					__stopCursorTimer();
 					__startCursorTimer();
-				}
 
-			case BACKSPACE:
-				if (__selectionIndex == __caretIndex && __caretIndex > 0)
-				{
-					__selectionIndex = __caretIndex - 1;
-				}
-
-				if (__selectionIndex != __caretIndex)
-				{
-					replaceSelectedText("");
-					__selectionIndex = __caretIndex;
-
-					dispatchEvent(new Event(Event.CHANGE, true));
-				}
-				else
-				{
-					__stopCursorTimer();
-					__startCursorTimer();
-				}
-
-			case DELETE:
-				if (__selectionIndex == __caretIndex && __caretIndex < __text.length)
-				{
-					__selectionIndex = __caretIndex + 1;
-				}
-
-				if (__selectionIndex != __caretIndex)
-				{
-					replaceSelectedText("");
-					__selectionIndex = __caretIndex;
-
-					dispatchEvent(new Event(Event.CHANGE, true));
-				}
-				else
-				{
-					__stopCursorTimer();
-					__startCursorTimer();
-				}
-
-			case LEFT if (selectable):
-				if (isModifierPressed())
-				{
-					__caretBeginningOfPreviousLine();
-				}
-				else
-				{
-					__caretPreviousCharacter();
-				}
-
-				if (!modifier.shiftKey)
-				{
-					__selectionIndex = __caretIndex;
-				}
-
-				setSelection(__selectionIndex, __caretIndex);
-
-			case RIGHT if (selectable):
-				if (isModifierPressed())
-				{
-					__caretBeginningOfNextLine();
-				}
-				else
-				{
-					__caretNextCharacter();
-				}
-
-				if (!modifier.shiftKey)
-				{
-					__selectionIndex = __caretIndex;
-				}
-
-				setSelection(__selectionIndex, __caretIndex);
-
-			case DOWN if (selectable):
-				if (isModifierPressed())
-				{
-					__caretIndex = __text.length;
-				}
-				else
-				{
-					__caretNextLine();
-				}
-
-				if (!modifier.shiftKey)
-				{
-					__selectionIndex = __caretIndex;
-				}
-
-				setSelection(__selectionIndex, __caretIndex);
-
-			case UP if (selectable):
-				if (isModifierPressed())
-				{
-					__caretIndex = 0;
-				}
-				else
-				{
-					__caretPreviousLine();
-				}
-
-				if (!modifier.shiftKey)
-				{
-					__selectionIndex = __caretIndex;
-				}
-
-				setSelection(__selectionIndex, __caretIndex);
-
-			case HOME if (selectable):
-				if (isModifierPressed())
-				{
-					__caretIndex = 0;
-				}
-				else
-				{
-					__caretBeginningOfLine();
-				}
-
-				if (!modifier.shiftKey)
-				{
-					__selectionIndex = __caretIndex;
-				}
-
-				setSelection(__selectionIndex, __caretIndex);
-
-			case END if (selectable):
-				if (isModifierPressed())
-				{
-					__caretIndex = __text.length;
-				}
-				else
-				{
-					__caretEndOfLine();
-				}
-
-				if (!modifier.shiftKey)
-				{
-					__selectionIndex = __caretIndex;
-				}
-
-				setSelection(__selectionIndex, __caretIndex);
-
-			case C:
-				#if lime
-				if (isModifierPressed())
-				{
-					if (__caretIndex != __selectionIndex)
+					#if (js && html5)
+					if (DisplayObject.__supportDOM && __renderedOnCanvasWhileOnDOM)
 					{
-						Clipboard.text = __text.substring(__caretIndex, __selectionIndex);
+						__forceCachedBitmapUpdate = true;
+					}
+					#end
+				}
+			}
+		}
+
+		@:noCompletion private function this_onAddedToStage(event:Event):Void
+		{
+			this_onFocusIn(null);
+		}
+
+		@:noCompletion private function this_onEnterFrame(e:Event):Void
+		{
+			__updateMouseDrag();
+			// can we use the render loop instead?
+		}
+
+		@:noCompletion private function this_onFocusIn(event:FocusEvent):Void
+		{
+			if (type == INPUT && stage != null && stage.focus == this)
+			{
+				__startTextInput();
+			}
+			else if (type != INPUT && selectable && stage != null && stage.focus == this)
+			{
+				__startCursorTimer();
+			}
+		}
+
+		@:noCompletion private function this_onFocusOut(event:FocusEvent):Void
+		{
+			__stopCursorTimer();
+
+			// even if the related object is another TextField, we should stop
+			// text input. this ensures that any incomplete IME input is committed.
+			__stopTextInput();
+
+			if (__selectionIndex != __caretIndex)
+			{
+				__selectionIndex = __caretIndex;
+				__dirty = true;
+				__setRenderDirty();
+			}
+		}
+
+		@:noCompletion private function this_onKeyDown(event:KeyboardEvent):Void
+		{
+			#if (lime && !openfl_doc_gen)
+			if (selectable && type != INPUT && event.keyCode == Keyboard.C && (event.commandKey || event.ctrlKey))
+			{
+				if (__caretIndex != __selectionIndex)
+				{
+					Clipboard.text = __text.substring(__caretIndex, __selectionIndex);
+				}
+			}
+			#end
+		}
+
+		@:noCompletion private function this_onMouseDown(event:MouseEvent):Void
+		{
+			if (!selectable && type != INPUT) return;
+
+			__updateLayout();
+
+			__caretIndex = __getPosition(mouseX + scrollH, mouseY);
+			__selectionIndex = __caretIndex;
+
+			if (!DisplayObject.__supportDOM)
+			{
+				__dirty = true;
+				__setRenderDirty();
+			}
+
+			// stage could be null if the TextField was removed from stage in an
+			// earlier listener
+			if (stage == null) return;
+			#if !notextselectscroll
+			// Todo: Add flag and implementation for flash scrolling behavior.
+			stage.addEventListener(Event.ENTER_FRAME, this_onEnterFrame);
+			#end
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, stage_onMouseMove);
+			stage.addEventListener(MouseEvent.MOUSE_UP, stage_onMouseUp);
+		}
+
+		@:noCompletion private function this_onMouseWheel(event:MouseEvent):Void
+		{
+			if (mouseWheelEnabled)
+			{
+				scrollV = Std.int(Math.min(scrollV - event.delta, maxScrollV));
+			}
+		}
+
+		@:noCompletion private function this_onDoubleClick(event:MouseEvent):Void
+		{
+			if (selectable)
+			{
+				__updateLayout();
+
+				var delimiters:Array<String> = ['\n', '.', '!', '?', ',', ' ', ';', ':', '(', ')', '-', '_', '/'];
+
+				var txtStr:String = __text;
+				var leftPos:Int = -1;
+				var rightPos:Int = txtStr.length;
+				var pos:Int = 0;
+				var startPos:Int = Std.int(Math.max(__caretIndex, 1));
+				if (txtStr.length > 0 && __caretIndex >= 0 && rightPos >= __caretIndex)
+				{
+					for (c in delimiters)
+					{
+						pos = txtStr.lastIndexOf(c, startPos - 1);
+						if (pos > leftPos) leftPos = pos + 1;
+
+						pos = txtStr.indexOf(c, startPos);
+						if (pos < rightPos && pos != -1) rightPos = pos;
+					}
+
+					if (leftPos != rightPos)
+					{
+						setSelection(leftPos, rightPos);
+
+						var setDirty:Bool = true;
+						#if openfl_html5
+						if (DisplayObject.__supportDOM)
+						{
+							if (__renderedOnCanvasWhileOnDOM)
+							{
+								__forceCachedBitmapUpdate = true;
+							}
+							setDirty = false;
+						}
+						#end
+						if (setDirty)
+						{
+							__dirty = true;
+							__setRenderDirty();
+						}
 					}
 				}
-				#end
+			}
+		}
 
-			case X:
-				#if lime
-				if (isModifierPressed())
-				{
-					if (__caretIndex != __selectionIndex)
+		#if lime
+		@:noCompletion private function window_onKeyDown(key:KeyCode, modifier:KeyModifier):Void
+		{
+			inline function isModifierPressed()
+				return #if mac modifier.metaKey #elseif js(modifier.metaKey || modifier.ctrlKey) #else (modifier.ctrlKey && !modifier.altKey) #end;
+
+			switch (key)
+			{
+				case RETURN, NUMPAD_ENTER:
+					if (__textEngine.multiline)
 					{
-						Clipboard.text = __text.substring(__caretIndex, __selectionIndex);
-
-						replaceSelectedText("");
-						dispatchEvent(new Event(Event.CHANGE, true));
-					}
-				}
-				#end
-
-			#if !js
-			case V:
-				#if lime
-				if (#if mac modifier.metaKey #else modifier.ctrlKey && !modifier.altKey #end)
-				{
-					if (Clipboard.text != null)
-					{
-						var te = new TextEvent(TextEvent.TEXT_INPUT, true, true, Clipboard.text);
+						var te = new TextEvent(TextEvent.TEXT_INPUT, true, true, "\n");
 
 						dispatchEvent(te);
 
 						if (!te.isDefaultPrevented())
 						{
-							__replaceSelectedText(Clipboard.text, true);
+							__replaceSelectedText("\n", true);
 
 							dispatchEvent(new Event(Event.CHANGE, true));
 						}
 					}
-				}
-				else
-				{
-					// TODO: does this need to occur?
-					__textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end = __text.length;
-				}
+					else
+					{
+						__stopCursorTimer();
+						__startCursorTimer();
+					}
+
+				case BACKSPACE:
+					if (__selectionIndex == __caretIndex && __caretIndex > 0)
+					{
+						__selectionIndex = __caretIndex - 1;
+					}
+
+					if (__selectionIndex != __caretIndex)
+					{
+						replaceSelectedText("");
+						__selectionIndex = __caretIndex;
+
+						dispatchEvent(new Event(Event.CHANGE, true));
+					}
+					else
+					{
+						__stopCursorTimer();
+						__startCursorTimer();
+					}
+
+				case DELETE:
+					if (__selectionIndex == __caretIndex && __caretIndex < __text.length)
+					{
+						__selectionIndex = __caretIndex + 1;
+					}
+
+					if (__selectionIndex != __caretIndex)
+					{
+						replaceSelectedText("");
+						__selectionIndex = __caretIndex;
+
+						dispatchEvent(new Event(Event.CHANGE, true));
+					}
+					else
+					{
+						__stopCursorTimer();
+						__startCursorTimer();
+					}
+
+				case LEFT if (selectable):
+					if (isModifierPressed())
+					{
+						__caretBeginningOfPreviousLine();
+					}
+					else
+					{
+						__caretPreviousCharacter();
+					}
+
+					if (!modifier.shiftKey)
+					{
+						__selectionIndex = __caretIndex;
+					}
+
+					setSelection(__selectionIndex, __caretIndex);
+
+				case RIGHT if (selectable):
+					if (isModifierPressed())
+					{
+						__caretBeginningOfNextLine();
+					}
+					else
+					{
+						__caretNextCharacter();
+					}
+
+					if (!modifier.shiftKey)
+					{
+						__selectionIndex = __caretIndex;
+					}
+
+					setSelection(__selectionIndex, __caretIndex);
+
+				case DOWN if (selectable):
+					if (isModifierPressed())
+					{
+						__caretIndex = __text.length;
+					}
+					else
+					{
+						__caretNextLine();
+					}
+
+					if (!modifier.shiftKey)
+					{
+						__selectionIndex = __caretIndex;
+					}
+
+					setSelection(__selectionIndex, __caretIndex);
+
+				case UP if (selectable):
+					if (isModifierPressed())
+					{
+						__caretIndex = 0;
+					}
+					else
+					{
+						__caretPreviousLine();
+					}
+
+					if (!modifier.shiftKey)
+					{
+						__selectionIndex = __caretIndex;
+					}
+
+					setSelection(__selectionIndex, __caretIndex);
+
+				case HOME if (selectable):
+					if (isModifierPressed())
+					{
+						__caretIndex = 0;
+					}
+					else
+					{
+						__caretBeginningOfLine();
+					}
+
+					if (!modifier.shiftKey)
+					{
+						__selectionIndex = __caretIndex;
+					}
+
+					setSelection(__selectionIndex, __caretIndex);
+
+				case END if (selectable):
+					if (isModifierPressed())
+					{
+						__caretIndex = __text.length;
+					}
+					else
+					{
+						__caretEndOfLine();
+					}
+
+					if (!modifier.shiftKey)
+					{
+						__selectionIndex = __caretIndex;
+					}
+
+					setSelection(__selectionIndex, __caretIndex);
+
+				case C:
+					#if lime
+					if (isModifierPressed())
+					{
+						if (__caretIndex != __selectionIndex)
+						{
+							Clipboard.text = __text.substring(__caretIndex, __selectionIndex);
+						}
+					}
+					#end
+
+				case X:
+					#if lime
+					if (isModifierPressed())
+					{
+						if (__caretIndex != __selectionIndex)
+						{
+							Clipboard.text = __text.substring(__caretIndex, __selectionIndex);
+
+							replaceSelectedText("");
+							dispatchEvent(new Event(Event.CHANGE, true));
+						}
+					}
+					#end
+
+				#if !js
+				case V:
+					#if lime
+					if (#if mac modifier.metaKey #else modifier.ctrlKey && !modifier.altKey #end)
+					{
+						if (Clipboard.text != null)
+						{
+							var te = new TextEvent(TextEvent.TEXT_INPUT, true, true, Clipboard.text);
+
+							dispatchEvent(te);
+
+							if (!te.isDefaultPrevented())
+							{
+								__replaceSelectedText(Clipboard.text, true);
+
+								dispatchEvent(new Event(Event.CHANGE, true));
+							}
+						}
+					}
+					else
+					{
+						// TODO: does this need to occur?
+						__textEngine.textFormatRanges[__textEngine.textFormatRanges.length - 1].end = __text.length;
+					}
+					#end
 				#end
-			#end
 
-			case A if (selectable):
-				if (isModifierPressed())
-				{
-					setSelection(0, __text.length);
-				}
+				case A if (selectable):
+					if (isModifierPressed())
+					{
+						setSelection(0, __text.length);
+					}
 
-			default:
+				default:
+			}
 		}
-	}
-	#end
+		#end
 
-	@:noCompletion private function window_onTextInput(value:String):Void
-	{
-		__replaceSelectedText(value, true);
+		@:noCompletion private function window_onTextInput(value:String):Void
+		{
+			__replaceSelectedText(value, true);
 
-		// TODO: Dispatch change if at max chars?
-		dispatchEvent(new Event(Event.CHANGE, true));
-	}
-}
-#else
-typedef TextField = flash.text.TextField;
-#end
+			// TODO: Dispatch change if at max chars?
+			dispatchEvent(new Event(Event.CHANGE, true));
+		}
+		}

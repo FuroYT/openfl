@@ -11,24 +11,6 @@ class Stage3DTest extends Test
 	#if !integration
 	@Ignored
 	#end
-	public function test_context3D()
-	{
-		// TODO: Confirm functionality
-		// TODO: Isolate so integration is not needed
-
-		#if integration
-		var stage3D = Lib.current.stage.stage3Ds[0];
-		var exists = stage3D.context3D;
-
-		#if flash
-		Assert.isNull(exists);
-		#end
-		#end
-	}
-
-	#if !integration
-	@Ignored
-	#end
 	public function test_visible()
 	{
 		// TODO: Confirm functionality
@@ -139,10 +121,8 @@ class Stage3DTest extends Test
 			{
 				// munit template does not have the correct wmode for Stage3D
 
-				#if !flash
 				stage3D.addEventListener("context3DCreate", function(_) {});
 				stage3D.requestContext3D();
-				#end
 			}
 
 			return stage3D.context3D;
